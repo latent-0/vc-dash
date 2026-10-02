@@ -9,7 +9,7 @@ import { ago, cx, scoreColor } from '../lib/util'
 import { PathView } from './Company'
 
 const EDGE_COLOR: Record<Edge['type'], string> = {
-  Board: '#ff8a1f', Employment: '#7fa6dc', 'Co-investor': '#6fbf93', Advisor: '#a894d9', Education: '#5fb8b0', Deal: '#d9a54a', 'Portfolio CEO': '#ffb35c',
+  Board: '#e2711d', Employment: '#3d6fb2', 'Co-investor': '#2e8657', Advisor: '#7a5fc0', Education: '#2b8a82', Deal: '#a87420', 'Portfolio CEO': '#d98a2b',
 }
 
 export default function Relationships() {
@@ -58,7 +58,7 @@ export default function Relationships() {
             <div className="globe-legend hide-sm">{Object.entries(EDGE_COLOR).map(([k, v]) => <span key={k}><i className="dot" style={{ background: v }} />{k}</span>)}</div>
           </div>
           <div style={{ position: 'relative' }}>
-            <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', display: 'block', background: 'radial-gradient(ellipse at 80% 50%, rgba(255,138,31,.06), transparent 60%)' }}>
+            <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', display: 'block', background: 'radial-gradient(ellipse at 80% 50%, rgba(226,113,29,.06), transparent 60%)' }}>
               {['DayOne team', 'Connectors', `${c.name.split(' ')[0]} leadership`].map((t, i) => (
                 <text key={t} x={xs[i]} y={22} textAnchor="middle" className="svg-text" style={{ fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', fill: 'var(--faint)' }}>{t.toUpperCase()}</text>
               ))}
@@ -83,8 +83,8 @@ export default function Relationships() {
                 const right = !isTarget
                 return (
                   <g key={n.id} onMouseEnter={() => setHover(n.id)} onMouseLeave={() => setHover(null)} style={{ cursor: 'default', opacity: active && !on ? 0.4 : 1, transition: 'opacity .2s' }}>
-                    {on && <circle cx={p.x} cy={p.y} r={r + 6} fill="none" stroke={isTeam ? '#ff8a1f' : '#e8e2d6'} strokeOpacity={0.25} />}
-                    <circle cx={p.x} cy={p.y} r={r} fill={isTeam ? 'rgba(255,138,31,.16)' : isTarget ? '#1b2029' : '#141820'} stroke={isTeam ? '#ff8a1f' : isTarget ? '#e8e2d6' : 'rgba(232,226,214,.3)'} strokeWidth={1.2} />
+                    {on && <circle cx={p.x} cy={p.y} r={r + 6} fill="none" stroke={isTeam ? '#e2711d' : '#4a443b'} strokeOpacity={0.25} />}
+                    <circle cx={p.x} cy={p.y} r={r} fill={isTeam ? 'rgba(226,113,29,.14)' : isTarget ? '#f1ebe0' : '#fffdf9'} stroke={isTeam ? '#e2711d' : isTarget ? '#4a443b' : 'rgba(70,52,28,.28)'} strokeWidth={1.2} />
                     <text x={p.x} y={p.y + 3.5} textAnchor="middle" style={{ fontSize: 9.5, fill: 'var(--text)', fontFamily: 'var(--sans)', fontWeight: 600 }}>{n.name.split(' ').map((x) => x[0]).join('')}</text>
                     <text x={right ? p.x + r + 8 : p.x - r - 8} y={p.y - 1} textAnchor={right ? 'start' : 'end'} style={{ fontSize: 11, fill: on ? 'var(--text)' : 'var(--text-2)', fontFamily: 'var(--sans)' }}>{label}</text>
                     <text x={right ? p.x + r + 8 : p.x - r - 8} y={p.y + 12} textAnchor={right ? 'start' : 'end'} style={{ fontSize: 9.5, fill: 'var(--muted)', fontFamily: 'var(--sans)' }}>{n.role.length > 30 ? n.role.slice(0, 30) + '…' : n.role}</text>

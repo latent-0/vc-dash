@@ -65,7 +65,7 @@ export function ScoreRing({ value, size = 42, stroke = 3, invert, label }: { val
   return (
     <div className="score-ring" style={{ width: size, height: size }} title={label}>
       <svg width={size} height={size}>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth={stroke} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(70,52,28,0.09)" strokeWidth={stroke} />
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={scoreColor(value, invert)} strokeWidth={stroke} strokeLinecap="round"
           strokeDasharray={c} strokeDashoffset={c * (1 - value / 100)} transform={`rotate(-90 ${size / 2} ${size / 2})`} style={{ transition: 'stroke-dashoffset .8s cubic-bezier(.2,.7,.2,1)' }} />
       </svg>
@@ -102,7 +102,7 @@ export function Sparkline({ data, w = 90, h = 26, color = 'var(--accent)', fill 
 
 export function CompanyLogo({ c, lg }: { c: Company; lg?: boolean }) {
   const hue = (c.name.charCodeAt(0) * 37 + c.name.charCodeAt(1) * 11) % 360
-  return <div className={cx('logo', lg && 'lg')} style={{ background: `linear-gradient(145deg, hsl(${hue} 22% 17%), hsl(${hue} 18% 11%))`, color: `hsl(${hue} 40% 82%)` }}>{c.name[0]}</div>
+  return <div className={cx('logo', lg && 'lg')} style={{ background: `linear-gradient(145deg, hsl(${hue} 45% 95%), hsl(${hue} 35% 89%))`, color: `hsl(${hue} 40% 30%)` }}>{c.name[0]}</div>
 }
 
 export function StatusTag({ s }: { s: Company['status'] }) {
@@ -140,7 +140,7 @@ function ScoreInspector({ companyId, focus, onClose }: { companyId: string; focu
   const sigs = signals.filter((s) => s.companyId === c.id).slice(0, 3)
   return (
     <>
-      <div className="overlay" style={{ background: 'rgba(4,5,7,.45)', padding: 0 }} onClick={onClose} />
+      <div className="overlay" style={{ background: 'rgba(40,30,15,.18)', padding: 0 }} onClick={onClose} />
       <aside className="drawer" role="dialog" aria-label="Score breakdown">
         <div className="drawer-head">
           <CompanyLogo c={c} />

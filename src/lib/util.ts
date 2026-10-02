@@ -17,18 +17,18 @@ export function opportunityScore(s: Scores) {
 }
 
 export const FAMILY: Record<SignalFamily, { color: string; icon: typeof Crown }> = {
-  Leadership: { color: '#ff8a1f', icon: Crown },
-  Capital: { color: '#6fbf93', icon: LineChart },
-  Operations: { color: '#7fa6dc', icon: Cog },
-  Market: { color: '#a894d9', icon: Building2 },
-  Risk: { color: '#e07a6b', icon: ShieldAlert },
-  Product: { color: '#5fb8b0', icon: Package },
-  People: { color: '#ffb35c', icon: Users },
-  Ownership: { color: '#d9a54a', icon: Briefcase },
+  Leadership: { color: '#e2711d', icon: Crown },
+  Capital: { color: '#2e8657', icon: LineChart },
+  Operations: { color: '#3d6fb2', icon: Cog },
+  Market: { color: '#7a5fc0', icon: Building2 },
+  Risk: { color: '#c2463a', icon: ShieldAlert },
+  Product: { color: '#2b8a82', icon: Package },
+  People: { color: '#d98a2b', icon: Users },
+  Ownership: { color: '#a87420', icon: Briefcase },
 }
 
 export const STATUS_COLOR: Record<Company['status'], string> = {
-  Tracking: '#7f8590', Screening: '#7fa6dc', Diligence: '#a894d9', IC: '#ff8a1f', Portfolio: '#6fbf93', Passed: '#545a64',
+  Tracking: '#8a8276', Screening: '#3d6fb2', Diligence: '#7a5fc0', IC: '#e2711d', Portfolio: '#2e8657', Passed: '#b0a898',
 }
 
 export function ago(iso: string) {

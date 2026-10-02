@@ -34,7 +34,7 @@ export default function InvestmentGlobe({ mode = 'deals', height, focus }: { mod
     return () => ro.disconnect()
   }, [height])
 
-  const material = useMemo(() => new MeshPhongMaterial({ color: new Color('#0c1016'), emissive: new Color('#06080b'), shininess: 6, transparent: true, opacity: 0.96 }), [])
+  const material = useMemo(() => new MeshPhongMaterial({ color: new Color('#fbf7ef'), emissive: new Color('#efe6d6'), emissiveIntensity: 0.55, shininess: 4 }), [])
 
   const points: Pt[] = useMemo(() => {
     const cps: Pt[] = companies.map((c) => ({
@@ -43,8 +43,8 @@ export default function InvestmentGlobe({ mode = 'deals', height, focus }: { mod
       color: STATUS_COLOR[c.status],
       label: c.name,
     }))
-    const hq: Pt = { ...HQ, size: 0.6, color: '#ffc21a', label: 'DayOne — New York', kind: 'hq' }
-    const sp: Pt[] = mode === 'flows' ? sponsors.map((s) => ({ lat: s.lat, lng: s.lng, size: 0.25, color: '#e8e2d6', label: `${s.name} · ${s.type}`, kind: 'sponsor' as const })) : []
+    const hq: Pt = { ...HQ, size: 0.6, color: '#f4a524', label: 'DayOne — New York', kind: 'hq' }
+    const sp: Pt[] = mode === 'flows' ? sponsors.map((s) => ({ lat: s.lat, lng: s.lng, size: 0.25, color: '#4a443b', label: `${s.name} · ${s.type}`, kind: 'sponsor' as const })) : []
     return [...cps, hq, ...sp]
   }, [mode])
 
@@ -53,7 +53,7 @@ export default function InvestmentGlobe({ mode = 'deals', height, focus }: { mod
     signals.forEach((s) => { if (daysSince(s.date) < 10) fresh.set(s.companyId, Math.max(fresh.get(s.companyId) ?? 0, s.magnitude)) })
     return [...fresh.entries()].map(([id, mag]) => {
       const c = companies.find((x) => x.id === id)!
-      return { lat: c.lat, lng: c.lng, maxR: 2 + (mag / 100) * 3.5, speed: 1.4, period: 1400 + Math.random() * 900, color: mag > 80 ? '#ff8a1f' : '#ffc21a' }
+      return { lat: c.lat, lng: c.lng, maxR: 2 + (mag / 100) * 3.5, speed: 1.4, period: 1400 + Math.random() * 900, color: mag > 80 ? '#e2711d' : '#f4a524' }
     })
   }, [])
 
@@ -61,7 +61,7 @@ export default function InvestmentGlobe({ mode = 'deals', height, focus }: { mod
     if (mode === 'flows') {
       return transactions.map((t) => ({
         startLat: t.fromLat, startLng: t.fromLng, endLat: t.toLat, endLng: t.toLng,
-        color: t.buyer.startsWith('DayOne') ? ['rgba(255,194,26,0.9)', 'rgba(255,77,10,0.9)'] : t.type === 'Strategic' ? ['rgba(168,148,217,0.15)', 'rgba(168,148,217,0.9)'] : ['rgba(127,166,220,0.15)', 'rgba(127,166,220,0.9)'],
+        color: t.buyer.startsWith('DayOne') ? ['rgba(244,165,36,0.95)', 'rgba(224,84,26,0.95)'] : t.type === 'Strategic' ? ['rgba(122,95,192,0.15)', 'rgba(122,95,192,0.9)'] : ['rgba(61,111,178,0.15)', 'rgba(61,111,178,0.9)'],
         label: `${t.buyer} → ${t.target} · ${t.type}${t.ev ? ` · ${money(t.ev)}` : ''}`,
       }))
     }
@@ -70,7 +70,7 @@ export default function InvestmentGlobe({ mode = 'deals', height, focus }: { mod
       : companies.filter((c) => c.status === 'IC' || c.status === 'Diligence' || c.status === 'Portfolio' || c.id === focus)
     return pool.map((c) => ({
       startLat: HQ.lat, startLng: HQ.lng, endLat: c.lat, endLng: c.lng,
-      color: c.status === 'Portfolio' ? ['rgba(111,191,147,0.1)', 'rgba(111,191,147,0.85)'] : ['rgba(255,194,26,0.1)', 'rgba(255,107,20,0.95)'],
+      color: c.status === 'Portfolio' ? ['rgba(46,134,87,0.15)', 'rgba(46,134,87,0.9)'] : ['rgba(244,165,36,0.2)', 'rgba(224,84,26,0.95)'],
       label: `${c.name} · ${c.status}`,
     }))
   }, [mode, focus])
@@ -99,13 +99,13 @@ export default function InvestmentGlobe({ mode = 'deals', height, focus }: { mod
         backgroundColor="rgba(0,0,0,0)"
         globeMaterial={material}
         showAtmosphere
-        atmosphereColor="#ff8a1f"
-        atmosphereAltitude={0.13}
+        atmosphereColor="#e2711d"
+        atmosphereAltitude={0.16}
         hexPolygonsData={countries}
         hexPolygonResolution={3}
         hexPolygonMargin={0.42}
         hexPolygonUseDots
-        hexPolygonColor={(d: object) => (activeCountries.has((d as { properties: { name: string } }).properties.name) ? 'rgba(255,170,90,0.42)' : 'rgba(232,226,214,0.16)')}
+        hexPolygonColor={(d: object) => (activeCountries.has((d as { properties: { name: string } }).properties.name) ? 'rgba(226,113,29,0.75)' : 'rgba(74,62,44,0.32)')}
         pointsData={points}
         pointLat="lat"
         pointLng="lng"

@@ -119,7 +119,7 @@ function ICRoom({ id }: { id: string }) {
                   const here = risks.filter((r) => r.l === l && r.im === im)
                   const heat = (l + im) / 4
                   return (
-                    <div key={`${im}${l}`} className="risk-cell" style={{ background: `rgba(224,122,107,${0.04 + heat * 0.18})` }}>
+                    <div key={`${im}${l}`} className="risk-cell" style={{ background: `rgba(194,70,58,${0.04 + heat * 0.16})` }}>
                       {here.map((r) => <span key={r.r} className="risk-dot" title={r.r}>{risks.indexOf(r) + 1}</span>)}
                     </div>
                   )

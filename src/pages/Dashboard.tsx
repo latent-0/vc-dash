@@ -74,10 +74,10 @@ export default function Dashboard() {
               <div className="globe-legend">
                 {mode === 'flows' ? (
                   <>
-                    <span><i className="dot" style={{ background: '#ff8a1f' }} />DayOne add-ons</span>
-                    <span><i className="dot" style={{ background: '#a894d9' }} />Strategic</span>
-                    <span><i className="dot" style={{ background: '#7fa6dc' }} />Sponsor</span>
-                    <span><i className="dot" style={{ background: '#e8e2d6' }} />Active buyers</span>
+                    <span><i className="dot" style={{ background: '#e2711d' }} />DayOne add-ons</span>
+                    <span><i className="dot" style={{ background: '#7a5fc0' }} />Strategic</span>
+                    <span><i className="dot" style={{ background: '#3d6fb2' }} />Sponsor</span>
+                    <span><i className="dot" style={{ background: '#4a443b' }} />Active buyers</span>
                   </>
                 ) : (
                   (['IC', 'Diligence', 'Screening', 'Tracking', 'Portfolio'] as const).map((s) => <span key={s}><i className="dot" style={{ background: STATUS_COLOR[s] }} />{s}</span>)
