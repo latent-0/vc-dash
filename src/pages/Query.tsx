@@ -7,6 +7,9 @@ import type { Company, Signal, SignalFamily } from '../data/types'
 import { FAMILY, ago, daysSince, opportunityScore } from '../lib/util'
 import { pathsToCompany } from '../lib/graph'
 import { PathView } from './Company'
+import { LogoMark } from '../components/Logo'
+import { queryContext, streamAsk } from '../lib/ask'
+import { useLive } from '../lib/live'
 
 const EXAMPLES = [
   'Find companies in industrial software showing acquisition or succession signals in the last 90 days',
@@ -101,7 +104,8 @@ export default function Query() {
       {parsed && (
         <div className="grid g-main mt-24">
           <div className="col" style={{ gap: 14 }}>
-            {done ? <Answer p={parsed} nav={nav} /> : <Panel><div className="row muted small"><Loader2 size={14} className="spin" /> {STEPS[Math.min(step, STEPS.length - 1)]}…</div></Panel>}
+            <OttoAnswer q={q0} />
+            {done ? <><div className="eyebrow" style={{ marginTop: 4 }}>Matching records</div><Answer p={parsed} nav={nav} /></> : <Panel><div className="row muted small"><Loader2 size={14} className="spin" /> {STEPS[Math.min(step, STEPS.length - 1)]}…</div></Panel>}
           </div>
           <div className="col" style={{ gap: 14 }}>
             <Panel title="Interpretation">
@@ -222,5 +226,36 @@ function Answer({ p, nav }: { p: Parsed; nav: (x: string) => void }) {
       </Panel>
       <Panel flush>{hits.length ? hits.map(({ c, s }) => <CompanyRow key={c.id} c={c} sig={s} nav={nav} />) : <div className="empty">No matches — try widening the window.</div>}</Panel>
     </>
+  )
+}
+
+function OttoAnswer({ q }: { q: string }) {
+  const live = useLive()
+  const [text, setText] = useState('')
+  const [state, setState] = useState<'thinking' | 'streaming' | 'done' | 'error'>('thinking')
+  const ready = live.status !== 'loading'
+  useEffect(() => {
+    if (!ready) return
+    const ac = new AbortController()
+    setText(''); setState('thinking')
+    streamAsk({ mode: 'query', question: q, context: queryContext(live.signals) }, (t) => { setState('streaming'); setText(t) }, ac.signal)
+      .then(() => setState('done'))
+      .catch(() => { if (!ac.signal.aborted) setState('error') })
+    return () => ac.abort()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q, ready])
+  if (state === 'error') return null
+  return (
+    <Panel glow>
+      <div className="row" style={{ alignItems: 'flex-start', gap: 12 }}>
+        <LogoMark size={24} />
+        <div className="grow" style={{ minWidth: 0 }}>
+          <div className="xs muted" style={{ marginBottom: 6 }}>Otto · gpt-oss-120b over {companies.length} companies, {sponsors.length} sponsors and {live.signals.length} live headlines</div>
+          {state === 'thinking'
+            ? <div className="typing"><i /><i /><i /></div>
+            : <div className="ai-text" style={{ whiteSpace: 'pre-wrap', fontSize: 14.5 }}>{text.replace(/\*\*/g, '')}{state === 'streaming' && <span className="caret" />}</div>}
+        </div>
+      </div>
+    </Panel>
   )
 }

@@ -6,8 +6,9 @@ import { companies, companyById, signals, sourceById } from '../data/seed'
 import type { Company, Source } from '../data/types'
 import { LogoMark } from '../components/Logo'
 import { cx, fmtShort, money } from '../lib/util'
+import { copilotContext, streamAsk } from '../lib/ask'
 
-type Msg = { role: 'user' | 'ai'; text: string; cites?: Source[]; table?: { claim: string; status: string }[] }
+type Msg = { role: 'user' | 'ai'; text: string; cites?: Source[]; table?: { claim: string; status: string }[]; streaming?: boolean; model?: string }
 
 const PROMPTS = [
   'Where does the evidence contradict management?',
@@ -54,28 +55,34 @@ export default function Diligence() {
   const c = companyById[id] ?? companyById.c1
   const [msgs, setMsgs] = useState<Msg[]>([])
   const [typing, setTyping] = useState(false)
-  const [streamed, setStreamed] = useState(0)
   const [input, setInput] = useState('')
   const [saved, setSaved] = useState<string[]>([])
   const endRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => { setMsgs([]); setSaved([]) }, [c.id])
-  useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }) }, [msgs, streamed, typing])
+  useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }) }, [msgs, typing])
 
-  const last = msgs[msgs.length - 1]
-  useEffect(() => {
-    if (!last || last.role !== 'ai') return
-    setStreamed(0)
-    const t = window.setInterval(() => setStreamed((s) => { if (s >= last.text.length) { window.clearInterval(t); return s } return s + 6 }), 16)
-    return () => window.clearInterval(t)
-  }, [last])
-
-  const ask = (q: string) => {
+  const ask = async (q: string) => {
     if (!q.trim() || typing) return
+    const history = msgs.filter((m) => !m.streaming).map((m) => ({ role: m.role === 'user' ? 'user' as const : 'assistant' as const, content: m.text }))
     setMsgs((m) => [...m, { role: 'user', text: q }])
     setInput('')
     setTyping(true)
-    window.setTimeout(() => { setTyping(false); setMsgs((m) => [...m, answer(c, q)]) }, 900)
+    const { context, sources } = copilotContext(c.id)
+    const citesIn = (t: string) => [...new Set([...t.matchAll(/\[(\d+)\]/g)].map((x) => +x[1]))].map((n) => sources[n - 1]).filter(Boolean)
+    try {
+      let started = false
+      await streamAsk({ mode: 'copilot', question: q, context, history }, (text) => {
+        if (!started) { started = true; setTyping(false); setMsgs((m) => [...m, { role: 'ai', text, streaming: true, model: 'gpt-oss-120b' }]); return }
+        setMsgs((m) => [...m.slice(0, -1), { ...m[m.length - 1], text }])
+      })
+      setMsgs((m) => { const last = m[m.length - 1]; return [...m.slice(0, -1), { ...last, streaming: false, cites: citesIn(last.text) }] })
+    } catch {
+      // Offline / no key: fall back to the deterministic evidence engine.
+      setMsgs((m) => [...m.filter((x) => !x.streaming), { ...answer(c, q), model: 'offline engine' }])
+    } finally {
+      setTyping(false)
+    }
   }
 
   const allCites = useMemo(() => [...new Map(msgs.flatMap((m) => m.cites ?? []).map((s) => [s.id, s])).values()], [msgs])
@@ -112,21 +119,21 @@ export default function Diligence() {
               </div>
             )}
             {msgs.map((m, i) => {
-              const isLast = i === msgs.length - 1 && m.role === 'ai'
-              const text = isLast ? m.text.slice(0, streamed) : m.text
+              const text = m.text
+              const done = !m.streaming
               return (
                 <div key={i} className="chat-msg">
                   {m.role === 'user' ? <div className="avatar sm internal">EW</div> : <div style={{ width: 22 }}><LogoMark size={22} /></div>}
                   <div className="bubble">
-                    <div className="xs muted" style={{ marginBottom: 4 }}>{m.role === 'user' ? 'You' : 'Otto Copilot'}</div>
-                    <div className={cx('small', m.role === 'ai' && 'ai-text')} style={{ whiteSpace: 'pre-wrap' }}>{renderCites(text)}</div>
-                    {m.table && (!isLast || streamed >= m.text.length) && (
+                    <div className="xs muted" style={{ marginBottom: 4 }}>{m.role === 'user' ? 'You' : <>Otto Copilot{m.model && <span className="faint"> · {m.model}</span>}</>}</div>
+                    <div className={cx('small', m.role === 'ai' && 'ai-text')} style={{ whiteSpace: 'pre-wrap' }}>{renderCites(text.replace(/\*\*/g, ''))}{m.streaming && <span className="caret" />}</div>
+                    {m.table && done && (
                       <table className="table mt-12 panel" style={{ overflow: 'hidden' }}>
                         <thead><tr><th>Claim</th><th>Status</th></tr></thead>
                         <tbody>{m.table.map((r) => <tr key={r.claim}><td>{r.claim}</td><td><span className={cx('tag', r.status === 'Supported' ? 'pos' : r.status === 'Contradicted' ? 'neg' : r.status === 'Partial' ? 'warn' : '')}>{r.status}</span></td></tr>)}</tbody>
                       </table>
                     )}
-                    {m.role === 'ai' && (!isLast || streamed >= m.text.length) && (
+                    {m.role === 'ai' && done && (
                       <div className="row mt-8" style={{ gap: 6 }}>
                         <button className="btn sm ghost" onClick={() => { setSaved((s) => [...s, msgs[i - 1]?.text ?? '']); toast('Saved to IC room') }}><BookmarkPlus />Save to IC room</button>
                         <button className="btn sm ghost" onClick={() => toast('Annotation added')}>Annotate</button>
@@ -174,5 +181,5 @@ export default function Diligence() {
 }
 
 function renderCites(t: string) {
-  return t.split(/(\[\d\])/g).map((p, i) => (/^\[\d\]$/.test(p) ? <span key={i} className="cite">{p.slice(1, -1)}</span> : p))
+  return t.split(/(\[\d+\])/g).map((p, i) => (/^\[\d+\]$/.test(p) ? <span key={i} className="cite">{p.slice(1, -1)}</span> : p))
 }
