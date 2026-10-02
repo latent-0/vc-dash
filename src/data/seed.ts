@@ -15,7 +15,8 @@ const rnd = mulberry32(20261002)
 const pick = <T,>(arr: T[]) => arr[Math.floor(rnd() * arr.length)]
 const between = (a: number, b: number) => a + rnd() * (b - a)
 
-export const TODAY = new Date('2026-10-02T08:30:00Z')
+// Seeded records are positioned relative to the real current time so they sit naturally beside live data.
+export const TODAY = new Date()
 export const daysAgo = (d: number) => new Date(TODAY.getTime() - d * 86400000).toISOString()
 
 export const FIRM = { name: 'DayOne Venture Partners', short: 'DayOne', fund: 'DayOne Fund III', aum: 2.4 }

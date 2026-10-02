@@ -118,7 +118,7 @@ export default function Diligence() {
                 <div key={i} className="chat-msg">
                   {m.role === 'user' ? <div className="avatar sm internal">EW</div> : <div style={{ width: 22 }}><LogoMark size={22} /></div>}
                   <div className="bubble">
-                    <div className="xs muted" style={{ marginBottom: 4 }}>{m.role === 'user' ? 'You' : 'Bryant Copilot'}</div>
+                    <div className="xs muted" style={{ marginBottom: 4 }}>{m.role === 'user' ? 'You' : 'Otto Copilot'}</div>
                     <div className={cx('small', m.role === 'ai' && 'ai-text')} style={{ whiteSpace: 'pre-wrap' }}>{renderCites(text)}</div>
                     {m.table && (!isLast || streamed >= m.text.length) && (
                       <table className="table mt-12 panel" style={{ overflow: 'hidden' }}>

@@ -24,11 +24,11 @@ const pages = {
 }
 
 function Splash() {
-  const [out, setOut] = useState(() => { try { return sessionStorage.getItem('bryant.splash') === '1' } catch { return false } })
+  const [out, setOut] = useState(() => { try { return sessionStorage.getItem('otto.splash') === '1' } catch { return false } })
   const [gone, setGone] = useState(out)
   useEffect(() => {
     if (out) return
-    const t1 = window.setTimeout(() => { setOut(true); try { sessionStorage.setItem('bryant.splash', '1') } catch { /* ignore */ } }, 1900)
+    const t1 = window.setTimeout(() => { setOut(true); try { sessionStorage.setItem('otto.splash', '1') } catch { /* ignore */ } }, 1900)
     const t2 = window.setTimeout(() => setGone(true), 2600)
     return () => { window.clearTimeout(t1); window.clearTimeout(t2) }
   }, [out])
@@ -38,7 +38,7 @@ function Splash() {
       <div className="splash-inner">
         <LogoFull size={92} />
         <div className="splash-line" />
-        <div className="eyebrow mt-16" style={{ letterSpacing: '0.3em' }}>Bryant · Private Capital Intelligence</div>
+        <div className="eyebrow mt-16" style={{ letterSpacing: '0.3em' }}>Otto Intelligence · by DayOne Venture Partners</div>
       </div>
     </div>
   )

@@ -5,7 +5,8 @@ import {
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { FIRM, companies, me, signals, sponsors, theses } from '../data/seed'
-import { FAMILY, ago, cx } from '../lib/util'
+import { cx } from '../lib/util'
+import { timeAgo, useLive } from '../lib/live'
 import { LogoMark } from './Logo'
 import { useApp } from './ui'
 
@@ -47,7 +48,7 @@ export function Shell({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('keydown', h)
   }, [setPaletteOpen])
   const current = ALL_NAV.find((n) => (n.to === '/' ? loc.pathname === '/' : loc.pathname.startsWith(n.to)))
-  const crumb = loc.pathname.startsWith('/company/') ? 'Company Intelligence' : current?.label ?? 'BRYANT'
+  const crumb = loc.pathname.startsWith('/company/') ? 'Company Intelligence' : current?.label ?? 'Otto'
 
   return (
     <div className="shell">
@@ -56,7 +57,7 @@ export function Shell({ children }: { children: ReactNode }) {
           <LogoMark size={30} />
           <div>
             <div className="wordmark" style={{ fontSize: 17, letterSpacing: '0.3em' }}>DAYONE</div>
-            <div className="brand-sub">Bryant Intelligence</div>
+            <div className="brand-sub">Otto Intelligence</div>
           </div>
         </div>
         <nav className="nav">
@@ -89,10 +90,9 @@ export function Shell({ children }: { children: ReactNode }) {
           <button className="search-trigger" onClick={() => setPaletteOpen(true)}>
             <Search /> <span className="ellipsis">Ask anything — companies, signals, people, theses…</span><span className="kbd hide-sm">Ctrl K</span>
           </button>
-          <span className="live-dot hide-sm">LIVE · 08:30 ET</span>
+          <LiveStatus />
           <NavLink to="/watchlists" className="icon-btn" aria-label="Alerts"><Bell /><span className="dot" /></NavLink>
         </header>
-        <Ticker />
         <div className="content" ref={contentRef}>{children}</div>
       </div>
       {paletteOpen && <Palette onClose={() => setPaletteOpen(false)} />}
@@ -100,21 +100,10 @@ export function Shell({ children }: { children: ReactNode }) {
   )
 }
 
-function Ticker() {
-  const nav = useNavigate()
-  const items = useMemo(() => signals.slice(0, 18), [])
-  const row = items.map((s) => {
-    const c = companies.find((x) => x.id === s.companyId)!
-    return (
-      <span key={s.id} onClick={() => nav(`/company/${c.id}`)}>
-        <span className="dot" style={{ background: FAMILY[s.family].color }} />
-        <span style={{ color: 'var(--text)' }}>{c.name.toUpperCase()}</span>
-        <span>{s.type}</span>
-        <span className="faint">{ago(s.date)}</span>
-      </span>
-    )
-  })
-  return <div className="ticker hide-sm"><div className="ticker-track">{row}{row}</div></div>
+function LiveStatus() {
+  const live = useLive()
+  if (live.status !== 'live') return <span className="live-dot hide-sm" style={{ opacity: 0.6 }}>{live.status === 'loading' ? 'CONNECTING' : 'OFFLINE'}</span>
+  return <NavLink to="/signals" className="live-dot hide-sm">LIVE · {live.signals.length} signals · {timeAgo(live.updatedAt!)}</NavLink>
 }
 
 const EXAMPLES = [
@@ -133,7 +122,7 @@ function Palette({ onClose }: { onClose: () => void }) {
   type Item = { key: string; section: string; label: ReactNode; icon: typeof Home; go: () => void }
   const items: Item[] = useMemo(() => {
     const out: Item[] = []
-    if (ql) out.push({ key: 'ask', section: 'Ask BRYANT', label: <>Ask: <b>{q}</b></>, icon: Sparkles, go: () => nav(`/query?q=${encodeURIComponent(q)}`) })
+    if (ql) out.push({ key: 'ask', section: 'Ask Otto', label: <>Ask: <b>{q}</b></>, icon: Sparkles, go: () => nav(`/query?q=${encodeURIComponent(q)}`) })
     companies.filter((c) => !ql || c.name.toLowerCase().includes(ql) || c.subsector.toLowerCase().includes(ql)).slice(0, ql ? 6 : 4)
       .forEach((c) => out.push({ key: c.id, section: 'Companies', label: <>{c.name} <span className="muted xs">· {c.subsector} · {c.city}</span></>, icon: Building, go: () => nav(`/company/${c.id}`) }))
     ALL_NAV.filter((n) => !ql || n.label.toLowerCase().includes(ql)).slice(0, ql ? 4 : 6)
@@ -151,7 +140,7 @@ function Palette({ onClose }: { onClose: () => void }) {
       <div className="palette" onClick={(e) => e.stopPropagation()}>
         <div className="palette-input">
           <Sparkles />
-          <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Ask BRYANT or jump to…"
+          <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Ask Otto or jump to…"
             onKeyDown={(e) => {
               if (e.key === 'Escape') onClose()
               if (e.key === 'ArrowDown') { e.preventDefault(); setSel((s) => Math.min(items.length - 1, s + 1)) }

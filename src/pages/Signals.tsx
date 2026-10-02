@@ -5,6 +5,7 @@ import { CompanyLogo, Panel, useApp } from '../components/ui'
 import { companyById, signals, sourceById } from '../data/seed'
 import type { SignalFamily } from '../data/types'
 import { FAMILY, ago, cx, daysSince } from '../lib/util'
+import { timeAgo, useLive } from '../lib/live'
 
 const FAMILIES = Object.keys(FAMILY) as SignalFamily[]
 const USE: Record<SignalFamily, string> = {
@@ -16,6 +17,9 @@ export default function Signals() {
   const nav = useNavigate()
   const { toast } = useApp()
   const [fam, setFam] = useState<SignalFamily | 'all'>('all')
+  const [view, setView] = useState<'live' | 'tracked'>('live')
+  const live = useLive()
+  const liveList = live.signals.filter((s) => fam === 'all' || s.family === fam)
   const [win, setWin] = useState(30)
   const [minRel, setMinRel] = useState(60)
   const list = useMemo(() => signals.filter((s) => (fam === 'all' || s.family === fam) && daysSince(s.date) <= win && s.relevance >= minRel), [fam, win, minRel])
@@ -41,6 +45,43 @@ export default function Signals() {
         </div>
       </div>
 
+      <div className="row wrap" style={{ gap: 10, marginBottom: 14 }}>
+        <div className="seg">
+          <button className={cx(view === 'live' && 'on')} onClick={() => setView('live')}>Live market wire</button>
+          <button className={cx(view === 'tracked' && 'on')} onClick={() => setView('tracked')}>Tracked companies</button>
+        </div>
+        {view === 'live' && <span className="xs muted">{live.status === 'live' ? `${live.signals.length} public signals · last 72h · refreshed ${live.updatedAt ? timeAgo(live.updatedAt) : ''}` : live.status === 'loading' ? 'Connecting…' : 'Feed unavailable'}</span>}
+      </div>
+
+      {view === 'live' ? (
+        <>
+          <div className="seg" style={{ marginBottom: 12 }}>
+            <button className={cx(fam === 'all' && 'on')} onClick={() => setFam('all')}>All</button>
+            {FAMILIES.filter((f) => live.signals.some((s) => s.family === f)).map((f) => <button key={f} className={cx(fam === f && 'on')} onClick={() => setFam(f)}>{f}</button>)}
+          </div>
+          <Panel flush>
+            {liveList.map((s) => {
+              const F = FAMILY[s.family]
+              return (
+                <a key={s.id} href={s.url} target="_blank" rel="noreferrer" className="list-item clickable">
+                  <div className="sig-icon" style={{ color: F.color, background: `${F.color}14`, borderColor: `${F.color}33` }}><F.icon /></div>
+                  <div className="grow" style={{ minWidth: 0 }}>
+                    <div style={{ fontWeight: 500 }}>{s.title}</div>
+                    <div className="row wrap mt-8" style={{ gap: 6 }}>
+                      <span className="tag" style={{ color: F.color }}>{s.type}</span>
+                      <span className="tag">{s.source}</span>
+                      <span className="tag">Rel {s.relevance}</span>
+                      {s.thesis && <span className="tag accent">{s.thesis}</span>}
+                    </div>
+                  </div>
+                  <span className="xs muted" style={{ whiteSpace: 'nowrap' }}>{timeAgo(s.date)}</span>
+                </a>
+              )
+            })}
+            {!liveList.length && <div className="empty small">{live.status === 'loading' ? 'Connecting to live sources…' : 'No live signals in this family right now.'}</div>}
+          </Panel>
+        </>
+      ) : (<>
       <div className="grid g-main">
         <Panel title="Signal density · 12 weeks" right={<span className="xs muted">click a family to filter</span>}>
           <div className="heat">
@@ -113,6 +154,7 @@ export default function Signals() {
           )
         })}
       </Panel>
+      </>)}
     </div>
   )
 }

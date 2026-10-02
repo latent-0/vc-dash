@@ -21,7 +21,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [msg, setMsg] = useState<string | null>(null)
   const [insp, setInsp] = useState<{ id: string; key?: keyof Scores } | null>(null)
   const [watch, setWatch] = useState<Set<string>>(() => {
-    try { return new Set(JSON.parse(localStorage.getItem('bryant.watch') || '["c1","c2","c4","c3","c12"]')) } catch { return new Set(['c1', 'c2', 'c4']) }
+    try { return new Set(JSON.parse(localStorage.getItem('otto.watch') || '["c1","c2","c4","c3","c12"]')) } catch { return new Set(['c1', 'c2', 'c4']) }
   })
   const [paletteOpen, setPaletteOpen] = useState(false)
   const toast = useCallback((m: string) => { setMsg(m); window.setTimeout(() => setMsg(null), 2400) }, [])
@@ -29,7 +29,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setWatch((w) => {
       const n = new Set(w)
       if (n.has(id)) n.delete(id); else n.add(id)
-      try { localStorage.setItem('bryant.watch', JSON.stringify([...n])) } catch { /* ignore */ }
+      try { localStorage.setItem('otto.watch', JSON.stringify([...n])) } catch { /* ignore */ }
       return n
     })
   }, [])
