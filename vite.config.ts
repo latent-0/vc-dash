@@ -1,30 +1,37 @@
 import react from '@vitejs/plugin-react'
+import type { IncomingMessage } from 'node:http'
 import { defineConfig, loadEnv, type Plugin } from 'vite'
 
-// Serves /api/* in dev using the same modules the Vercel functions use.
-function devApi(env: Record<string, string>): Plugin {
+// Runs api/**/*.ts Vercel-style functions (export GET/POST(request) => Response) inside the dev server.
+function devApi(): Plugin {
   return {
     name: 'otto-dev-api',
     configureServer(server) {
-      server.middlewares.use('/api/live', async (_req, res) => {
+      server.middlewares.use(async (req: IncomingMessage, res, next) => {
+        const url = new URL(req.url ?? '/', 'http://localhost')
+        if (!url.pathname.startsWith('/api/')) return next()
+        const name = url.pathname.slice(5).replace(/\/$/, '')
+        if (!name || name.split('/').some((p) => p.startsWith('_'))) return next()
+        let mod: Record<string, (r: Request) => Promise<Response>>
         try {
-          const mod = await server.ssrLoadModule('/api/_live.ts')
-          const data = await mod.getLive({ SEC_USER_AGENT: env.SEC_USER_AGENT })
-          res.setHeader('content-type', 'application/json')
-          res.end(JSON.stringify(data))
-        } catch (e) {
-          res.statusCode = 500
-          res.end(JSON.stringify({ error: String(e) }))
+          mod = await server.ssrLoadModule(`/api/${name}.ts`)
+        } catch {
+          return next()
         }
-      })
-      server.middlewares.use('/api/ask', async (req, res) => {
+        const handler = mod[req.method ?? 'GET']
+        if (!handler) { res.statusCode = 405; return res.end() }
         try {
-          let raw = ''
-          for await (const c of req) raw += c
-          const mod = await server.ssrLoadModule('/api/_llm.ts')
-          const stream: ReadableStream<Uint8Array> = await mod.askStream(JSON.parse(raw), env.GROQ_API_KEY)
-          res.setHeader('content-type', 'text/plain; charset=utf-8')
-          for await (const chunk of stream as unknown as AsyncIterable<Uint8Array>) res.write(chunk)
+          const hasBody = req.method !== 'GET' && req.method !== 'HEAD'
+          const request = new Request(url, {
+            method: req.method,
+            headers: req.headers as Record<string, string>,
+            body: hasBody ? (req as unknown as ReadableStream) : undefined,
+            ...(hasBody ? { duplex: 'half' } : {}),
+          } as RequestInit)
+          const response = await handler(request)
+          res.statusCode = response.status
+          response.headers.forEach((v, k) => res.setHeader(k, v))
+          if (response.body) for await (const chunk of response.body as unknown as AsyncIterable<Uint8Array>) res.write(chunk)
           res.end()
         } catch (e) {
           res.statusCode = 500
@@ -37,10 +44,11 @@ function devApi(env: Record<string, string>): Plugin {
 }
 
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), '')
+  // Expose server-side secrets from .env.local to the dev API functions (never to the client bundle).
+  Object.assign(process.env, loadEnv(mode, process.cwd(), ''))
   return {
     base: '/',
-    plugins: [react(), devApi(env)],
+    plugins: [react(), devApi()],
     build: { chunkSizeWarningLimit: 2500 },
   }
 })

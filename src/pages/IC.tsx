@@ -159,7 +159,7 @@ function ICRoom({ id }: { id: string }) {
         </div>
 
         <div className="col" style={{ gap: 14 }}>
-          <Panel title="Record decision" glow>
+          <Panel title="Record decision" glow tour="decision">
             <div className="row" style={{ gap: 8 }}>
               <button className="btn primary grow" style={{ justifyContent: 'center' }} onClick={() => decide('Approve, subject to cohort data')}><Check />Approve</button>
               <button className="btn grow" style={{ justifyContent: 'center' }} onClick={() => decide('Defer pending diligence')}><Minus />Defer</button>

@@ -50,7 +50,7 @@ export default function Relationships() {
       </div>
 
       <div className="grid g-main">
-        <section className="panel glow" style={{ overflow: 'hidden' }}>
+        <section className="panel glow" data-tour="graph" style={{ overflow: 'hidden' }}>
           <div className="panel-head">
             <CompanyLogo c={c} />
             <div><div className="h3">{c.name}</div><div className="xs muted">{nodes.length} people · {links.length} relationships · {paths.length} paths</div></div>

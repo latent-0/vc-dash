@@ -45,7 +45,7 @@ export default function Dashboard() {
       </header>
 
       {/* Top of mind — scannable, 3 items max */}
-      <div className="focus-row">
+      <div className="focus-row" data-tour="focus">
         {focus.map((f) => (
           <Link key={f.title} to={f.to} className="focus-card">
             <span className={cx('focus-icon', f.tone)}><f.icon size={15} /></span>
@@ -69,7 +69,7 @@ export default function Dashboard() {
 
       {/* Primary canvas */}
       <div className="grid g-main">
-        <section className="panel glow" style={{ minHeight: 520, overflow: 'hidden' }}>
+        <section className="panel glow" data-tour="globe" style={{ minHeight: 520, overflow: 'hidden' }}>
           <div className="globe-wrap" style={{ position: 'absolute', inset: 0 }}>
             <Suspense fallback={<GlobeFallback />}><InvestmentGlobe mode={mode} /></Suspense>
             <div className="globe-overlay">
@@ -88,7 +88,7 @@ export default function Dashboard() {
           </div>
         </section>
 
-        <Panel title="Priority opportunities" icon={<Target size={14} className="accent" />} right={<Link to="/radar" className="btn ghost sm">All <ChevronRight size={12} /></Link>} flush>
+        <Panel tour="priority" title="Priority opportunities" icon={<Target size={14} className="accent" />} right={<Link to="/radar" className="btn ghost sm">All <ChevronRight size={12} /></Link>} flush>
           {ranked.slice(0, 6).map((c) => (
             <div key={c.id} className="list-item clickable compact" onClick={() => nav(`/company/${c.id}`)}>
               <CompanyLogo c={c} />
@@ -106,6 +106,7 @@ export default function Dashboard() {
       {/* Live wire — real public-market data */}
       <div className="grid g-main mt-16">
         <Panel
+          tour="livewire"
           title={<>Live market wire <span className={cx('live-pill', live.status)}>{live.status === 'live' ? 'LIVE' : live.status === 'loading' ? 'CONNECTING' : 'OFFLINE'}</span></>}
           icon={<Radio size={14} className="accent" />}
           right={<span className="xs muted">{live.updatedAt ? `Updated ${timeAgo(live.updatedAt)}` : ''}</span>}

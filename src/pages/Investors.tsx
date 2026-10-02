@@ -1,5 +1,6 @@
 import { ExternalLink, Flame, Search, Sparkles, Users, X } from 'lucide-react'
 import { Suspense, lazy, useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Panel } from '../components/ui'
 import { LogoMark } from '../components/Logo'
 import { streamAsk } from '../lib/ask'
@@ -33,7 +34,9 @@ export default function Investors() {
   const [region, setRegion] = useState<(typeof REGIONS)[number]>('All')
   const [type, setType] = useState('All types')
   const [aum, setAum] = useState(0)
-  const [q, setQ] = useState('')
+  const [params] = useSearchParams()
+  const [q, setQ] = useState(params.get('q') ?? '')
+  useEffect(() => { const v = params.get('q'); if (v !== null) setQ(v) }, [params])
   const [bestOnly, setBestOnly] = useState(false)
   const [limit, setLimit] = useState(60)
   const [sel, setSel] = useState<Firm | null>(null)

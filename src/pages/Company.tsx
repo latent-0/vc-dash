@@ -52,7 +52,7 @@ export default function CompanyPage() {
       </div>
 
       {/* Score band */}
-      <section className="panel glow" style={{ padding: 18 }}>
+      <section className="panel glow" data-tour="scoreband" style={{ padding: 18 }}>
         <div className="row wrap" style={{ gap: 28 }}>
           <button className="row" style={{ gap: 14 }} onClick={() => inspect(c.id)}>
             <ScoreRing value={total} size={78} stroke={5} />

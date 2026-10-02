@@ -44,9 +44,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
 }
 
 /* ---------- Primitives ---------- */
-export function Panel({ title, icon, right, children, className, flush, glow }: { title?: ReactNode; icon?: ReactNode; right?: ReactNode; children: ReactNode; className?: string; flush?: boolean; glow?: boolean }) {
+export function Panel({ title, icon, right, children, className, flush, glow, tour }: { title?: ReactNode; icon?: ReactNode; right?: ReactNode; children: ReactNode; className?: string; flush?: boolean; glow?: boolean; tour?: string }) {
   return (
-    <section className={cx('panel', glow && 'glow', className)}>
+    <section className={cx('panel', glow && 'glow', className)} data-tour={tour}>
       {title && (
         <header className="panel-head">
           <h3 className="h3">{icon}{title}</h3>

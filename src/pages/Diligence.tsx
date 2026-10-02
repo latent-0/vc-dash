@@ -102,7 +102,7 @@ export default function Diligence() {
       </div>
 
       <div className="grid g-main">
-        <section className="panel chat-panel">
+        <section className="panel chat-panel" data-tour="copilot">
           <div className="panel-head">
             <CompanyLogo c={c} />
             <div><div className="h3">{c.name}</div><div className="xs muted">{signals.filter((s) => s.companyId === c.id).length} signals · evidence coverage {c.scores.evidence}% · scoped to deal-team permissions</div></div>

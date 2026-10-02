@@ -52,7 +52,7 @@ export default function Radar() {
         <span className="xs muted" style={{ marginLeft: 'auto' }}>{rows.length} opportunities</span>
       </div>
 
-      <div className="panel table-wrap" style={{ overflow: 'auto', maxHeight: 'calc(100vh - 280px)' }}>
+      <div data-tour="radar" className="panel table-wrap" style={{ overflow: 'auto', maxHeight: 'calc(100vh - 280px)' }}>
         <table className="table">
           <thead>
             <tr>

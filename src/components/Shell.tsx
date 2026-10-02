@@ -1,5 +1,5 @@
 import {
-  Activity, ArrowRight, Bell, BookMarked, Brain, Building, Compass, Gauge, Globe2, Home, Landmark, LogOut, Map, Menu, MessageSquareText,
+  Activity, ArrowRight, Bell, BookMarked, Brain, Building, Compass, Gauge, Globe2, Home, Landmark, Map, Menu, MessageSquareText,
   Network, Radar, Search, Sparkles, Star, TrendingUp, Telescope, Users,
 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
@@ -9,6 +9,7 @@ import { cx } from '../lib/util'
 import { timeAgo, useLive } from '../lib/live'
 import { LogoMark } from './Logo'
 import { useApp } from './ui'
+import { startTour } from './Tour'
 
 const NAV: { label: string; items: { to: string; label: string; icon: typeof Home; badge?: string; hot?: boolean }[] }[] = [
   { label: 'Intelligence', items: [
@@ -61,7 +62,7 @@ export function Shell({ children }: { children: ReactNode }) {
             <div className="brand-sub">Otto Intelligence</div>
           </div>
         </div>
-        <nav className="nav">
+        <nav className="nav" data-tour="nav">
           {NAV.map((g) => (
             <div className="nav-group" key={g.label}>
               <div className="nav-label">{g.label}</div>
@@ -80,7 +81,7 @@ export function Shell({ children }: { children: ReactNode }) {
             <div className="small ellipsis" style={{ fontWeight: 500 }}>{me.name}</div>
             <div className="xs muted ellipsis">{FIRM.fund}</div>
           </div>
-          <button className="icon-btn" title="Sign out (demo)"><LogOut /></button>
+          <button className="icon-btn" title="Take the tour" onClick={startTour}><Compass /></button>
         </div>
       </aside>
       {open && <div className="overlay" style={{ zIndex: 35, padding: 0 }} onClick={() => setOpen(false)} />}
@@ -88,7 +89,7 @@ export function Shell({ children }: { children: ReactNode }) {
         <header className="topbar">
           <button className="icon-btn menu-btn" onClick={() => setOpen(true)} aria-label="Menu"><Menu /></button>
           <div className="crumbs hide-sm"><span>{FIRM.short}</span><span className="faint">/</span><b>{crumb}</b></div>
-          <button className="search-trigger" onClick={() => setPaletteOpen(true)}>
+          <button className="search-trigger" data-tour="search" onClick={() => setPaletteOpen(true)}>
             <Search /> <span className="ellipsis">Ask anything — companies, signals, people, theses…</span><span className="kbd hide-sm">Ctrl K</span>
           </button>
           <LiveStatus />
@@ -130,6 +131,7 @@ function Palette({ onClose }: { onClose: () => void }) {
       .forEach((n) => out.push({ key: n.to, section: 'Go to', label: n.label, icon: n.icon, go: () => nav(n.to) }))
     sponsors.filter((s) => ql && s.name.toLowerCase().includes(ql)).slice(0, 3)
       .forEach((s) => out.push({ key: s.id, section: 'Sponsors & buyers', label: s.name, icon: Globe2, go: () => nav('/sponsors') }))
+    if (!ql || 'tour'.includes(ql) || ql.includes('tour')) out.push({ key: 'tour', section: 'Help', label: 'Take the product tour', icon: Compass, go: () => startTour() })
     if (!ql) EXAMPLES.forEach((e, i) => out.push({ key: `ex${i}`, section: 'Try asking', label: e, icon: Gauge, go: () => nav(`/query?q=${encodeURIComponent(e)}`) }))
     return out
   }, [ql, q, nav])

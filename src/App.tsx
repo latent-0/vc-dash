@@ -3,6 +3,9 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { LogoFull } from './components/Logo'
 import { Shell } from './components/Shell'
 import { AppProvider } from './components/ui'
+import { Tour } from './components/Tour'
+import { Voice } from './components/Voice'
+import { ConversationProvider } from '@elevenlabs/react'
 import { GlobeFallback } from './pages/Dashboard'
 import Dashboard from './pages/Dashboard'
 
@@ -78,6 +81,10 @@ export default function App() {
             </Routes>
           </Suspense>
         </Shell>
+        <Tour />
+        <ConversationProvider>
+          <Voice />
+        </ConversationProvider>
       </AppProvider>
     </BrowserRouter>
   )
