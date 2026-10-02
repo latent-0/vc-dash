@@ -521,3 +521,21 @@ body { background: var(--ink-1); color: var(--text); }
 .voice-bars i { width: 3px; border-radius: 3px; background: #fff; display: block; transition: height .08s; }
 .voice-orb.rt { box-shadow: 0 0 0 6px rgba(226,113,29,.15), 0 12px 34px rgba(226,113,29,.4); }
 .voice-orb.rt .voice-ring { opacity: 1; transform: scale(calc(1 + var(--lvl, 0) * 0.16)); transition: transform .08s; animation: none; }
+
+/* ---------- Filter bar ---------- */
+.filter-bar { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.filter-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: stretch; }
+.filter-search { flex: 1 1 260px; display: flex; align-items: center; gap: 8px; padding: 0 12px; height: 44px; border-radius: 10px; border: 1px solid var(--line-2); background: var(--ink-2); }
+.filter-search:focus-within { border-color: rgba(226,113,29,.5); }
+.filter-search input { flex: 1; border: 0; outline: none; background: none; min-width: 0; }
+.filter-search button { color: var(--muted); display: grid; place-items: center; }
+.select { display: flex; flex-direction: column; justify-content: center; gap: 1px; height: 44px; padding: 0 10px 0 12px; border-radius: 10px; border: 1px solid var(--line-2); background: var(--ink-2); min-width: 130px; cursor: pointer; transition: border-color .15s, background .15s; }
+.select:hover { border-color: var(--line-3); }
+.select.set { border-color: rgba(226,113,29,.45); background: var(--accent-dim); }
+.select .xs { line-height: 1; font-size: 10px; letter-spacing: .04em; }
+.select select { border: 0; outline: none; background: none; font-size: 13px; padding: 0; margin: 0 0 0 -3px; cursor: pointer; color: var(--text); max-width: 190px; }
+.filter-row > .btn { height: 44px; border-radius: 10px; }
+.btn.btn-set { border-color: rgba(226,113,29,.45); background: var(--accent-dim); color: var(--accent-2); }
+.filter-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding-top: 10px; border-top: 1px solid var(--line); }
+.filter-foot .select { height: 38px; min-width: 170px; }
+.table-wrap { overflow-x: auto; }

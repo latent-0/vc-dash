@@ -1,12 +1,13 @@
 """Build Otto's firm-level investor dataset from DayOne's raise databases.
 
 Usage:
-    python scripts/import_investors.py <Wigo .xlsx> <BLKBOXX .numbers>
+    python scripts/import_investors.py <investor database .xlsx> <investor database .numbers>
 
 Privacy: the source files contain personal contact details (emails, phones, addresses, LinkedIn).
 This script deliberately drops every personal contact channel and person name and emits only
 firm-level aggregates to public/data/investors.json. Never commit the source spreadsheets.
 """
+import html
 import json
 import re
 import sys
@@ -70,7 +71,7 @@ SUFFIX = re.compile(r'\b(llc|l\.l\.c|inc|ltd|limited|lp|l\.p|llp|plc|gmbh|ag|sa|
 def clean(v):
     if v is None:
         return ''
-    s = str(v).replace('\xa0', ' ').strip()
+    s = html.unescape(html.unescape(str(v))).replace('\xa0', ' ').strip()
     return '' if s.lower() in ('n/a', 'na', 'none', '-', 'x', 'nan') else s
 
 
@@ -119,6 +120,11 @@ def scrub(text):
         text = rx.sub('', text)
     return re.sub(r'\s{2,}', ' ', text).strip(' ,;')
 
+
+STAGE_TAGS = [
+    ('Seed', r'seed|start ?up|pre-seed|angel'), ('Early stage', r'early|series a'), ('Growth', r'growth|expansion|series [bc]|later stage'),
+    ('Buyout', r'buyout|recap|mbo|management buy|control'), ('Real estate', r'real estate|property'), ('Credit', r'mezzanine|debt|credit|lend'),
+]
 
 SENIOR = re.compile(r'partner|managing director|\bmd\b|founder|chief|ceo|cio|president|principal|chair|head|general partner|owner|director', re.I)
 
@@ -209,14 +215,14 @@ for r in rows[1:]:
         w['verification'] = ver
     f['wigo'] = w
 
-# ---------------------------------------------------------------- BLKBOXX (numbers)
+# ---------------------------------------------------------------- family office / institutional database (numbers)
 doc = numbers_parser.Document(BLK)
 S = {s.name.strip(): s for s in doc.sheets}
 
 # MFO (no header row) — col 0 firm, 3 title, 9 city, 12 country, 14 focus, 15 founded, 16 AUM, 19 website, 20 about
 _, data = table(S['MFO'])
 for r in data:
-    f = firm(r[0], 'Multi-family office', 'BLKBOXX')
+    f = firm(r[0], 'Multi-family office', 'DayOne')
     add_contact(f, r[3], r[9], r[12])
     setif(f, 'focus', clean(r[14])); setif(f, 'aum', money(r[16])); setif(f, 'website', clean(r[19])); setif(f, 'about', clean(r[20])[:300])
     if f is not None and clean(r[15]):
@@ -224,7 +230,7 @@ for r in data:
 
 h, data = table(S['SFO'])
 for r in data:
-    f = firm(r[0], 'Single-family office', 'BLKBOXX')
+    f = firm(r[0], 'Single-family office', 'DayOne')
     add_contact(f, r[4])
     setif(f, 'focus', clean(r[6]))
 
@@ -234,14 +240,14 @@ for r in data:
     if not clean(r[0]):
         angels_independent += 1
         continue
-    f = firm(r[0], 'Angel network', 'BLKBOXX')
+    f = firm(r[0], 'Angel network', 'DayOne')
     add_contact(f, r[3], r[8], r[11])
     setif(f, 'aum', money(r[13])); setif(f, 'focus', clean(r[14])); setif(f, 'website', clean(r[16]))
 
 h, data = table(S['Mixed'])
 for r in data:
     t = clean(r[1])
-    f = firm(r[0], 'Wealth manager' if t == 'Wealth Manager' else 'Multi-family office' if 'Multi' in t else 'Single-family office', 'BLKBOXX')
+    f = firm(r[0], 'Wealth manager' if t == 'Wealth Manager' else 'Multi-family office' if 'Multi' in t else 'Single-family office', 'DayOne')
     if f is not None:
         f['cities'][clean(r[2])] += 1 if clean(r[2]) else 0
         f['countries'][norm_country(r[3])] += 1 if norm_country(r[3]) else 0
@@ -251,13 +257,13 @@ for r in data:
 h, data = table(S['Mixed 2'])
 for r in data:
     t = clean(r[3])
-    f = firm(r[2], 'Wealth manager' if t == 'Wealth Manager' else 'Multi-family office' if 'Multi' in t else 'Single-family office', 'BLKBOXX')
+    f = firm(r[2], 'Wealth manager' if t == 'Wealth Manager' else 'Multi-family office' if 'Multi' in t else 'Single-family office', 'DayOne')
     add_contact(f, r[5], r[8], r[10])
 
 h, data = table(S['FO & Investment firms'])
 for r in data:
     ot = clean(r[2])
-    f = firm(r[4], 'Multi-family office' if ot == 'MFO' else 'Single-family office' if ot == 'SFO' else 'Family office', 'BLKBOXX')
+    f = firm(r[4], 'Multi-family office' if ot == 'MFO' else 'Single-family office' if ot == 'SFO' else 'Family office', 'DayOne')
     add_contact(f, r[7], r[14], r[17])
     setif(f, 'aum', money(r[19])); setif(f, 'focus', clean(r[24])[:200]); setif(f, 'website', clean(r[18]))
     if f is not None and clean(r[22]):
@@ -267,7 +273,7 @@ h, data = table(S['Funding firms'])
 for r in data:
     it = clean(r[8]) or 'Investment firm'
     ftype = 'Venture capital' if 'Venture' in it else 'Private equity' if 'Private Equity' in it else 'Angel network' if 'Angel' in it else it
-    f = firm(r[0], ftype, 'BLKBOXX')
+    f = firm(r[0], ftype, 'DayOne')
     if f is None:
         continue
     f['contacts'] += 1
@@ -280,7 +286,7 @@ for r in data:
 
 h, data = table(S['PERE'])
 for r in data:
-    f = firm(r[0], 'Real estate PE', 'BLKBOXX')
+    f = firm(r[0], 'Real estate PE', 'DayOne')
     add_contact(f, r[3], r[8], r[11])
     setif(f, 'aum', money(r[14])); setif(f, 'website', clean(r[16])); setif(f, 'about', clean(r[17])[:300])
     if f is not None and re.match(r'^\d{4}(\.0)?$', clean(r[13])):
@@ -288,13 +294,13 @@ for r in data:
 
 h, data = table(S['Investment Consultants'])
 for r in data:
-    f = firm(r[0], 'Investment consultant', 'BLKBOXX')
+    f = firm(r[0], 'Investment consultant', 'DayOne')
     add_contact(f, r[4], r[9], r[12])
     setif(f, 'aum', money(r[15])); setif(f, 'website', clean(r[14])); setif(f, 'about', clean(r[16])[:300])
 
 h, data = table(S['VC Firms'])
 for r in data:
-    f = firm(r[1], 'Venture capital', 'BLKBOXX')
+    f = firm(r[1], 'Venture capital', 'DayOne')
     add_contact(f, r[4], r[10], r[13])
     setif(f, 'focus', clean(r[15])[:200]); setif(f, 'aum', money(r[17])); setif(f, 'website', clean(r[20])); setif(f, 'about', clean(r[21])[:300])
     if f is not None and re.match(r'^\d{4}(\.0)?$', clean(r[16])):
@@ -302,13 +308,13 @@ for r in data:
 
 h, data = table(S['WM'])
 for r in data:
-    f = firm(r[1], 'Wealth manager', 'BLKBOXX')
+    f = firm(r[1], 'Wealth manager', 'DayOne')
     add_contact(f, r[4], r[10], r[13])
     setif(f, 'aum', money(r[17])); setif(f, 'website', clean(r[20])); setif(f, 'about', clean(r[21])[:300]); setif(f, 'focus', clean(r[15])[:200])
 
 h, data = table(S['Hedge Funds'])
 for r in data:
-    f = firm(r[0], 'Hedge fund', 'BLKBOXX')
+    f = firm(r[0], 'Hedge fund', 'DayOne')
     add_contact(f, r[2], r[14], r[17])
     if f is not None and clean(r[8]):
         add_contact(f, r[9])
@@ -316,13 +322,13 @@ for r in data:
 
 h, data = table(S['Endowment Funds'])
 for r in data:
-    f = firm(r[1], 'Endowment', 'BLKBOXX')
+    f = firm(r[1], 'Endowment', 'DayOne')
     add_contact(f, r[4], r[8], r[11])
     setif(f, 'aum', money(f"{clean(r[12])}m") if clean(r[12]) else None); setif(f, 'website', clean(r[14]))
 
 h, data = table(S['Private equity firms'])
 for r in data:
-    f = firm(r[0], 'Private equity', 'BLKBOXX')
+    f = firm(r[0], 'Private equity', 'DayOne')
     setif(f, 'website', clean(r[1]))
 
 # ---------------------------------------------------------------- emit
@@ -339,7 +345,6 @@ for key, f in firms.items():
         'id': re.sub(r'\s+', '-', key)[:60],
         'name': f['name'],
         'type': ftype,
-        'lists': sorted(f['sources']),
         'city': city,
         'country': country or 'Unknown',
         'region': REGION.get(country, 'Other') if country else 'Unknown',
@@ -361,6 +366,10 @@ for key, f in firms.items():
     if site and 'linkedin.com/in' not in site and '@' not in site:
         rec['website'] = site[:80]
     rec['roles'] = [scrub(t) for t in rec['roles'] if scrub(t)]
+    stage_text = f"{f['stage']} {f['focus']} {f['about']}".lower()
+    stages = [label for label, rx in STAGE_TAGS if re.search(rx, stage_text)]
+    if stages:
+        rec['stages'] = stages
     if f['wigo']:
         w = {k: (scrub(v) if isinstance(v, str) else v) for k, v in f['wigo'].items() if v}
         rec['wigo'] = w
@@ -372,7 +381,6 @@ meta = {
     'firms': len(out),
     'contacts': sum(r['contacts'] for r in out) + angels_independent,
     'independentAngels': angels_independent,
-    'lists': {'Wigo Energy': sum('Wigo Energy' in r['lists'] for r in out), 'BLKBOXX': sum('BLKBOXX' in r['lists'] for r in out)},
     'note': 'Firm-level aggregates only. Personal contact details are intentionally excluded.',
 }
 with open('public/data/investors.json', 'w', encoding='utf-8') as fh:

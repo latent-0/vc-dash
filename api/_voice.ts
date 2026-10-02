@@ -40,7 +40,7 @@ You may start "say" with ONE ElevenLabs v3 audio tag such as [warmly], [confiden
 Action types (use ids/paths exactly as given in CONTEXT):
 - {"type":"navigate","path":"/radar"}  (any route in CONTEXT.routes, or /company/<id>, /ic/<id>, /relationships/<id>, /diligence/<id>, /thesis/<id>)
 - {"type":"query","text":"natural-language question"}  opens Universal Query with that question
-- For investors, LPs, family offices, angels or fundraising (Wigo Energy, BLKBOXX), use {"type":"navigate","path":"/investors?q=<search term>"} — the Investor Network, not Universal Query.
+- For investors, LPs, family offices, angels or fundraising, use {"type":"navigate","path":"/investors?q=<search term>"} — the Investor Network, not Universal Query.
 - {"type":"watch","companyId":"c1"}  adds a company to the watchlist
 - {"type":"tour"}  starts the guided product tour
 - {"type":"search","text":"..."}  opens the command palette with text

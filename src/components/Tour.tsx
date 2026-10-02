@@ -7,7 +7,7 @@ interface Step { route?: string; target?: string; title: string; body: string }
 
 const STEPS: Step[] = [
   { title: 'Welcome to Otto Intelligence', body: 'Otto is DayOne’s intelligence layer: it tells the team what changed, why it matters, who can open the door and what to do next. This two-minute tour covers the essentials.' },
-  { route: '/', target: 'nav', title: 'Your workspace', body: 'Every stage of the investment lifecycle lives here, from thesis and signals through IC and portfolio to exit. Investor Network holds DayOne’s real raise databases.' },
+  { route: '/', target: 'nav', title: 'Your workspace', body: 'Every stage of the investment lifecycle lives here, from thesis and signals through IC and portfolio to exit. Investor Network holds DayOne’s real investor databases.' },
   { route: '/', target: 'focus', title: 'Start with what matters', body: 'The Morning Brief opens on the three things that need you today. Each card is one click from action.' },
   { route: '/', target: 'globe', title: 'The live investment graph', body: 'A WebGL globe of the pipeline. Switch between Pipeline, Transactions and Access. Rings pulse where fresh signals landed, and clicking a point opens the company.' },
   { route: '/', target: 'priority', title: 'Explainable priorities', body: 'Opportunities are ranked by a seven-factor score: fit, signal, timing, access, evidence, risk and actionability. Click any score ring to see the evidence behind it.' },
@@ -17,7 +17,7 @@ const STEPS: Step[] = [
   { route: '/relationships/c1', target: 'graph', title: 'Who can open the door', body: 'Warm paths from the DayOne team to a target’s leadership, ranked by strength and recency, with a suggested ask.' },
   { route: '/diligence/c1', target: 'copilot', title: 'Diligence Copilot', body: 'Interrogate a deal in plain English. Otto answers from the dossier with numbered citations, flags contradictions and drafts management questions.' },
   { route: '/ic/c1', target: 'decision', title: 'IC Room', body: 'One-page brief, risk matrix, evidence matrix and IC questions. Decisions are recorded to Decision Memory with the evidence available at the time.' },
-  { route: '/investors', target: 'investor-lens', title: 'Investor Network', body: 'Wigo Energy and BLKBOXX investor databases merged into one firm-level map, with Wigo’s fit research and Ask Otto for fundraising questions.' },
+  { route: '/investors', target: 'investor-filters', title: 'Investor Network', body: 'DayOne’s investor databases in one firm-level map. Filter by type, region, country, stage, AUM, cheque size and more, then ask Otto who to prioritise.' },
   { route: '/', target: 'search', title: 'Ask anything', body: 'Press Ctrl K to search or ask Otto a question in natural language across companies, signals, people and sponsors.' },
   { route: '/', target: 'voice', title: 'Talk to Otto', body: 'Tap the orb and speak. Otto can answer questions and drive the app for you, e.g. “open Northwind’s IC room” or “show me live funding rounds”.' },
 ]

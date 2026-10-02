@@ -25,7 +25,7 @@ const findCompany = (name: string) => {
   const n = name.toLowerCase().replace(/[^a-z0-9 ]/g, '')
   return companies.find((c) => c.name.toLowerCase().includes(n)) ?? companies.find((c) => n.includes(c.name.toLowerCase().split(' ')[0]))
 }
-const INVESTOR_Q = /investor|fund(?!ing round)|family office|angel|lp\b|raise|fundrais|wigo|blkboxx|endowment|wealth manager/i
+const INVESTOR_Q = /investor|fund(?!ing round)|family office|angel|lp\b|raise|fundrais|endowment|wealth manager/i
 
 type InvestorFirm = { name: string; type: string; city: string; country: string; aum?: number; contacts: number; senior: number; focus?: string; stage?: string; lists: string[]; wigo?: unknown }
 let investorCache: Promise<{ firms: InvestorFirm[] }> | null = null
