@@ -322,7 +322,7 @@ companies.forEach((c) => {
     const d = Math.round(Math.pow(rnd(), 1.6) * 120)
     signals.push({
       id: `g${signals.length + 1}`, companyId: c.id, family, type: t.type, title: t.title(c), detail: t.detail,
-      date: daysAgo(d), sourceIds: [pick(sources).id, pick(sources).id].filter((v, k, a) => a.indexOf(v) === k),
+      date: daysAgo(d + 0.08 + rnd() * 0.85), sourceIds: [pick(sources).id, pick(sources).id].filter((v, k, a) => a.indexOf(v) === k),
       relevance: Math.round(between(48, 98)), confidence: Math.round(between(55, 97)), magnitude: Math.round(between(30, 95)),
       isNew: d < 2,
     })
@@ -342,9 +342,10 @@ const hero: [string, SignalFamily, string, string, string, number][] = [
   ['c7', 'Capital', 'Funding round', 'Lumen Inference raises $60m Series C at 4x step-up', 'Strong demand signal; crossover-led.', 0],
 ]
 hero.forEach(([cid, family, type, title, detail, d]) => {
-  signals.push({ id: `g${signals.length + 1}`, companyId: cid, family, type, title, detail, date: daysAgo(d), sourceIds: [pick(sources).id, pick(sources).id], relevance: Math.round(between(86, 99)), confidence: Math.round(between(78, 96)), magnitude: Math.round(between(70, 96)), isNew: d < 2 })
+  signals.push({ id: `g${signals.length + 1}`, companyId: cid, family, type, title, detail, date: daysAgo(d + 0.1 + rnd() * 0.5), sourceIds: [pick(sources).id, pick(sources).id], relevance: Math.round(between(86, 99)), confidence: Math.round(between(78, 96)), magnitude: Math.round(between(70, 96)), isNew: d < 2 })
 })
 signals.sort((a, b) => b.date.localeCompare(a.date))
+companies.forEach((c) => { const s = signals.find((x) => x.companyId === c.id); if (s) c.lastChange = s.date })
 
 // ---------- Relationship edges ----------
 export const edges: Edge[] = []

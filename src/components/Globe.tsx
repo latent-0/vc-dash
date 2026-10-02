@@ -11,7 +11,9 @@ import { STATUS_COLOR, daysSince, money, opportunityScore } from '../lib/util'
 export type GlobeMode = 'deals' | 'flows' | 'network'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const countries = (feature(world as any, (world as any).objects.countries) as any).features as object[]
+const countries = ((feature(world as any, (world as any).objects.countries) as any).features as { properties: { name: string } }[])
+  // H3 fails to tile North Korea's ring at res 3; Antarctica adds visual noise.
+  .filter((f) => f.properties.name !== 'North Korea' && f.properties.name !== 'Antarctica')
 const HQ = { lat: 40.71, lng: -74.0 }
 const ISO_NAME: Record<string, string> = { US: 'United States of America', UK: 'United Kingdom', CZ: 'Czechia', DK: 'Denmark', NL: 'Netherlands', DE: 'Germany', IL: 'Israel', CA: 'Canada', IE: 'Ireland', SG: 'Singapore', AU: 'Australia', BR: 'Brazil', IT: 'Italy', FR: 'France', JP: 'Japan', IN: 'India', AE: 'United Arab Emirates' }
 const activeCountries = new Set(companies.map((c) => ISO_NAME[c.country]))
