@@ -21,6 +21,7 @@ const pages = {
   Exit: lazy(() => import('./pages/Exit')),
   Sponsors: lazy(() => import('./pages/Sponsors')),
   Watchlists: lazy(() => import('./pages/Watchlists')),
+  Investors: lazy(() => import('./pages/Investors')),
 }
 
 function Splash() {
@@ -72,6 +73,7 @@ export default function App() {
               <Route path="/exit" element={<P.Exit />} />
               <Route path="/sponsors" element={<P.Sponsors />} />
               <Route path="/watchlists" element={<P.Watchlists />} />
+              <Route path="/investors" element={<P.Investors />} />
               <Route path="*" element={<Dashboard />} />
             </Routes>
           </Suspense>

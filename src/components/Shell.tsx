@@ -1,6 +1,6 @@
 import {
   Activity, ArrowRight, Bell, BookMarked, Brain, Building, Compass, Gauge, Globe2, Home, Landmark, LogOut, Map, Menu, MessageSquareText,
-  Network, Radar, Search, Sparkles, Star, TrendingUp, Telescope,
+  Network, Radar, Search, Sparkles, Star, TrendingUp, Telescope, Users,
 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
@@ -30,6 +30,7 @@ const NAV: { label: string; items: { to: string; label: string; icon: typeof Hom
     { to: '/exit', label: 'Exit Intelligence', icon: Compass },
   ] },
   { label: 'Market', items: [
+    { to: '/investors', label: 'Investor Network', icon: Users, badge: '14k' },
     { to: '/sponsors', label: 'Sponsors & Buyers', icon: Building },
     { to: '/watchlists', label: 'Watchlists & Alerts', icon: Star },
   ] },

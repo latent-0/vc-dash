@@ -7,7 +7,7 @@ type History = { role: 'user' | 'assistant'; content: string }[]
 
 /** Streams an answer from /api/ask (Groq · gpt-oss-120b). Calls onDelta with the accumulated text. */
 export async function streamAsk(
-  body: { mode: 'copilot' | 'query'; question: string; context: unknown; history?: History },
+  body: { mode: 'copilot' | 'query' | 'investors'; question: string; context: unknown; history?: History },
   onDelta: (text: string) => void,
   signal?: AbortSignal,
 ) {

@@ -9,6 +9,7 @@ import type { Company } from '../data/types'
 import { STATUS_COLOR, daysSince, money, opportunityScore } from '../lib/util'
 
 export type GlobeMode = 'deals' | 'flows' | 'network'
+export interface CustomPoint { lat: number; lng: number; size: number; color: string; label: string }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const countries = ((feature(world as any, (world as any).objects.countries) as any).features as { properties: { name: string } }[])
@@ -18,9 +19,9 @@ const HQ = { lat: 40.71, lng: -74.0 }
 const ISO_NAME: Record<string, string> = { US: 'United States of America', UK: 'United Kingdom', CZ: 'Czechia', DK: 'Denmark', NL: 'Netherlands', DE: 'Germany', IL: 'Israel', CA: 'Canada', IE: 'Ireland', SG: 'Singapore', AU: 'Australia', BR: 'Brazil', IT: 'Italy', FR: 'France', JP: 'Japan', IN: 'India', AE: 'United Arab Emirates' }
 const activeCountries = new Set(companies.map((c) => ISO_NAME[c.country]))
 
-type Pt = { lat: number; lng: number; c?: Company; size: number; color: string; label: string; kind: 'company' | 'hq' | 'sponsor' }
+type Pt = { lat: number; lng: number; c?: Company; size: number; color: string; label: string; kind: 'company' | 'hq' | 'sponsor' | 'custom' }
 
-export default function InvestmentGlobe({ mode = 'deals', height, focus }: { mode?: GlobeMode; height?: number; focus?: string }) {
+export default function InvestmentGlobe({ mode = 'deals', height, focus, custom }: { mode?: GlobeMode; height?: number; focus?: string; custom?: CustomPoint[] }) {
   const wrap = useRef<HTMLDivElement>(null)
   const ref = useRef<GlobeMethods | undefined>(undefined)
   const [size, setSize] = useState({ w: 600, h: height ?? 480 })
@@ -37,6 +38,7 @@ export default function InvestmentGlobe({ mode = 'deals', height, focus }: { mod
   const material = useMemo(() => new MeshPhongMaterial({ color: new Color('#fbf7ef'), emissive: new Color('#efe6d6'), emissiveIntensity: 0.55, shininess: 4 }), [])
 
   const points: Pt[] = useMemo(() => {
+    if (custom) return custom.map((p) => ({ ...p, kind: 'custom' as const }))
     const cps: Pt[] = companies.map((c) => ({
       lat: c.lat, lng: c.lng, c, kind: 'company',
       size: 0.12 + (opportunityScore(c.scores) / 100) * 0.42,
@@ -46,18 +48,20 @@ export default function InvestmentGlobe({ mode = 'deals', height, focus }: { mod
     const hq: Pt = { ...HQ, size: 0.6, color: '#f4a524', label: 'DayOne — New York', kind: 'hq' }
     const sp: Pt[] = mode === 'flows' ? sponsors.map((s) => ({ lat: s.lat, lng: s.lng, size: 0.25, color: '#4a443b', label: `${s.name} · ${s.type}`, kind: 'sponsor' as const })) : []
     return [...cps, hq, ...sp]
-  }, [mode])
+  }, [mode, custom])
 
   const rings = useMemo(() => {
+    if (custom) return []
     const fresh = new Map<string, number>()
     signals.forEach((s) => { if (daysSince(s.date) < 10) fresh.set(s.companyId, Math.max(fresh.get(s.companyId) ?? 0, s.magnitude)) })
     return [...fresh.entries()].map(([id, mag]) => {
       const c = companies.find((x) => x.id === id)!
       return { lat: c.lat, lng: c.lng, maxR: 2 + (mag / 100) * 3.5, speed: 1.4, period: 1400 + Math.random() * 900, color: mag > 80 ? '#e2711d' : '#f4a524' }
     })
-  }, [])
+  }, [custom])
 
   const arcs = useMemo(() => {
+    if (custom) return []
     if (mode === 'flows') {
       return transactions.map((t) => ({
         startLat: t.fromLat, startLng: t.fromLng, endLat: t.toLat, endLng: t.toLng,
@@ -73,7 +77,7 @@ export default function InvestmentGlobe({ mode = 'deals', height, focus }: { mod
       color: c.status === 'Portfolio' ? ['rgba(46,134,87,0.15)', 'rgba(46,134,87,0.9)'] : ['rgba(244,165,36,0.2)', 'rgba(224,84,26,0.95)'],
       label: `${c.name} · ${c.status}`,
     }))
-  }, [mode, focus])
+  }, [mode, focus, custom])
 
   useEffect(() => {
     const g = ref.current
@@ -110,12 +114,12 @@ export default function InvestmentGlobe({ mode = 'deals', height, focus }: { mod
         pointLat="lat"
         pointLng="lng"
         pointColor="color"
-        pointAltitude={(d: object) => (d as Pt).size * 0.12}
-        pointRadius={(d: object) => ((d as Pt).kind === 'hq' ? 0.55 : 0.32)}
+        pointAltitude={(d: object) => (d as Pt).size * ((d as Pt).kind === 'custom' ? 0.1 : 0.12)}
+        pointRadius={(d: object) => ((d as Pt).kind === 'hq' ? 0.55 : (d as Pt).kind === 'custom' ? 0.42 : 0.32)}
         pointsMerge={false}
         pointLabel={(d: object) => {
           const p = d as Pt
-          if (!p.c) return `<div class="globe-tip"><b>${p.label}</b></div>`
+          if (!p.c) return `<div class="globe-tip">${p.kind === 'custom' ? p.label : `<b>${p.label}</b>`}</div>`
           const c = p.c
           return `<div class="globe-tip"><div class="k">${c.city} · ${c.sector}</div><b>${c.name}</b><div style="margin-top:6px;display:flex;gap:14px"><span><span class="k">Score</span> <span style="font-family:var(--mono)">${opportunityScore(c.scores)}</span></span><span><span class="k">Rev</span> <span style="font-family:var(--mono)">${money(c.revenue)}</span></span><span style="color:${STATUS_COLOR[c.status]}">${c.status}</span></div></div>`
         }}
