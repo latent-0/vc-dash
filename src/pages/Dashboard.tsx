@@ -1,11 +1,12 @@
-import { ArrowUpRight, ChevronRight, Globe2, Landmark, Radio, Sparkles, Target, TriangleAlert, UserRoundCheck } from 'lucide-react'
-import { Suspense, lazy, useMemo, useState } from 'react'
+import { ArrowUpRight, ChevronRight, Crosshair, Handshake, Globe2, Landmark, Radio, Sparkles, Target, TriangleAlert, UserRoundCheck } from 'lucide-react'
+import { Suspense, lazy, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { CompanyLogo, Panel, ScoreRing, Sparkline, StatusTag, useApp } from '../components/ui'
 import { companies, companyById, me, portfolio } from '../data/seed'
 import { FAMILY, STATUS_COLOR, cx, opportunityScore } from '../lib/util'
 import { timeAgo, useLive } from '../lib/live'
 import type { GlobeMode } from '../components/Globe'
+import { PIPELINE, useFundraise, type Stage } from '../lib/fund'
 
 const InvestmentGlobe = lazy(() => import('../components/Globe'))
 
@@ -153,7 +154,64 @@ export default function Dashboard() {
           </div>
         </Panel>
       </div>
+
+      {/* Otto v1 fundraising + realtime competitor insight */}
+      <div className="grid g-2">
+        <FundraiseCard />
+        <CompetitorCard />
+      </div>
     </div>
+  )
+}
+
+function FundraiseCard() {
+  const s = useFundraise()
+  const items = Object.values(s.pipeline)
+  const count = (st: Stage) => items.filter((p) => PIPELINE.indexOf(p.stage) >= PIPELINE.indexOf(st)).length
+  const steps = [
+    { label: 'Fact base', done: !!s.fund, to: '/fund' },
+    { label: 'Shortlist', done: !!s.shortlistAt, to: '/shortlist' },
+    { label: 'Outreach approved', done: items.some((p) => p.draft?.approvedAt), to: '/outreach' },
+    { label: 'Meeting booked', done: count('Meeting') > 0, to: '/pipeline' },
+  ]
+  return (
+    <Panel title="Fundraise · Otto v1" icon={<Handshake size={14} className="accent" />} right={<Link to={s.fund ? '/pipeline' : '/fund'} className="btn ghost sm">{s.fund ? 'Pipeline' : 'Start'} <ChevronRight size={12} /></Link>} tour="fundraise-card">
+      <div className="xs muted">{s.fund ? s.fund.fundName : 'Find the right LPs, get to a booked meeting, with you approving every step.'}</div>
+      <div className="fr-steps mt-12">
+        {steps.map((x, i) => <Link key={x.label} to={x.to} className={cx('fr-step', x.done && 'done')}><span>{i + 1}</span>{x.label}</Link>)}
+      </div>
+      <div className="grid g-4 mt-16" style={{ gap: 8 }}>
+        {(['Target', 'Contacted', 'Meeting', 'Committed'] as Stage[]).map((st) => <div key={st}><div className="xs muted">{st}{st === 'Target' ? '' : '+'}</div><div className="kpi-value" style={{ fontSize: 24 }}>{count(st)}</div></div>)}
+      </div>
+    </Panel>
+  )
+}
+
+type CompItem = { id: string; competitor: string; move: string; threat: string; title: string; source: string; url: string; date: string }
+function CompetitorCard() {
+  const s = useFundraise()
+  const [items, setItems] = useState<CompItem[] | null>(null)
+  const sectors = (s.fund?.sectors.length ? s.fund.sectors : ['Software & SaaS']).join('|')
+  useEffect(() => {
+    let alive = true
+    const load = () => fetch(`/api/competitors?lens=funds&sectors=${encodeURIComponent(sectors)}`).then((r) => r.json()).then((d) => alive && setItems(d.items ?? [])).catch(() => alive && setItems([]))
+    load()
+    const t = window.setInterval(load, 180_000)
+    return () => { alive = false; window.clearInterval(t) }
+  }, [sectors])
+  const top = (items ?? []).filter((x) => x.move !== 'Form D').slice(0, 4)
+  const formD = (items ?? []).filter((x) => x.move === 'Form D').length
+  return (
+    <Panel title={<>Competitor Watch <span className={cx('live-pill', items && 'live')}>{items ? 'LIVE' : 'CONNECTING'}</span></>} icon={<Crosshair size={14} className="accent" />} right={<Link to="/competitors" className="btn ghost sm">Open <ChevronRight size={12} /></Link>} flush>
+      {!items && <div className="empty"><div className="typing"><i /><i /><i /></div></div>}
+      {items && <div className="xs muted" style={{ padding: '10px 16px 0' }}>{formD} new pooled-fund Form D filings at the SEC · {items.filter((x) => x.move === 'Fund close').length} fund closes in 30 days</div>}
+      {top.map((x) => (
+        <a key={x.id} href={x.url} target="_blank" rel="noreferrer" className="list-item clickable compact">
+          <span className={cx('tag', x.threat === 'High' ? 'neg' : 'warn')} style={{ height: 19, width: 76, justifyContent: 'center' }}>{x.move}</span>
+          <div className="grow" style={{ minWidth: 0 }}><div className="small ellipsis">{x.title}</div><div className="xs muted">{x.source} · {timeAgo(x.date)}</div></div>
+        </a>
+      ))}
+    </Panel>
   )
 }
 

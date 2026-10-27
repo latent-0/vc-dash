@@ -25,6 +25,11 @@ const pages = {
   Sponsors: lazy(() => import('./pages/Sponsors')),
   Watchlists: lazy(() => import('./pages/Watchlists')),
   Investors: lazy(() => import('./pages/Investors')),
+  Fund: lazy(() => import('./pages/Fund')),
+  Shortlist: lazy(() => import('./pages/Shortlist')),
+  Outreach: lazy(() => import('./pages/Outreach')),
+  Pipeline: lazy(() => import('./pages/Pipeline')),
+  Competitors: lazy(() => import('./pages/Competitors')),
 }
 
 function Splash() {
@@ -77,6 +82,12 @@ export default function App() {
               <Route path="/sponsors" element={<P.Sponsors />} />
               <Route path="/watchlists" element={<P.Watchlists />} />
               <Route path="/investors" element={<P.Investors />} />
+              <Route path="/fund" element={<P.Fund />} />
+              <Route path="/shortlist" element={<P.Shortlist />} />
+              <Route path="/outreach" element={<P.Outreach />} />
+              <Route path="/outreach/:id" element={<P.Outreach />} />
+              <Route path="/pipeline" element={<P.Pipeline />} />
+              <Route path="/competitors" element={<P.Competitors />} />
               <Route path="*" element={<Dashboard />} />
             </Routes>
           </Suspense>

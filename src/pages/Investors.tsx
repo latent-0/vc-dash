@@ -7,6 +7,7 @@ import { streamAsk } from '../lib/ask'
 import { cx } from '../lib/util'
 import { GlobeFallback } from './Dashboard'
 import type { CustomPoint } from '../components/Globe'
+import { Prov } from '../components/Prov'
 
 const InvestmentGlobe = lazy(() => import('../components/Globe'))
 
@@ -15,6 +16,7 @@ interface Firm {
   contacts: number; senior: number; roles: string[]; lat?: number; lng?: number; aum?: number; founded?: number
   checkMin?: number; checkMax?: number; focus?: string; about?: string; stage?: string; stages?: string[]; website?: string
   wigo?: { temperature?: string; category?: string; research?: string }
+  prov: { src: ('A' | 'B')[]; verified: string | null; conf: number }
 }
 interface Data { meta: { firms: number; contacts: number; independentAngels: number; generated: string }; firms: Firm[] }
 
@@ -46,10 +48,10 @@ const SORTS: { label: string; fn: (a: Firm, b: Firm) => number }[] = [
 const fmtAum = (m?: number) => (!m ? '—' : m >= 1e6 ? `$${(m / 1e6).toFixed(1)}tn` : m >= 1000 ? `$${(m / 1000).toFixed(m >= 10000 ? 0 : 1)}bn` : `$${Math.round(m)}m`)
 const fmtCheque = (f: Firm) => (f.checkMin || f.checkMax ? `$${f.checkMin ?? '?'}m – $${f.checkMax ?? '?'}m` : '—')
 
-type Filters = { q: string; type: string; region: string; country: string; stage: string; aum: string; cheque: string; founded: string; senior: string; sort: string }
-const EMPTY: Filters = { q: '', type: ANY, region: ANY, country: ANY, stage: ANY, aum: ANY, cheque: ANY, founded: ANY, senior: ANY, sort: SORTS[0].label }
-const LABELS: Record<keyof Filters, string> = { q: 'Search', type: 'Type', region: 'Region', country: 'Country', stage: 'Stage', aum: 'AUM', cheque: 'Cheque', founded: 'Founded', senior: 'Decision-makers', sort: 'Sort' }
-const MORE: (keyof Filters)[] = ['aum', 'cheque', 'founded', 'senior']
+type Filters = { conf: string; q: string; type: string; region: string; country: string; stage: string; aum: string; cheque: string; founded: string; senior: string; sort: string }
+const EMPTY: Filters = { conf: ANY, q: '', type: ANY, region: ANY, country: ANY, stage: ANY, aum: ANY, cheque: ANY, founded: ANY, senior: ANY, sort: SORTS[0].label }
+const LABELS: Record<keyof Filters, string> = { conf: 'Data confidence', q: 'Search', type: 'Type', region: 'Region', country: 'Country', stage: 'Stage', aum: 'AUM', cheque: 'Cheque', founded: 'Founded', senior: 'Decision-makers', sort: 'Sort' }
+const MORE: (keyof Filters)[] = ['aum', 'cheque', 'founded', 'senior', 'conf']
 
 export default function Investors() {
   const [data, setData] = useState<Data | null>(null)
@@ -92,6 +94,7 @@ export default function Investors() {
       (!cheque || ((x.checkMin != null || x.checkMax != null) && (x.checkMin ?? 0) < cheque.max && (x.checkMax ?? x.checkMin ?? 0) >= cheque.min)) &&
       (!founded || (x.founded != null && founded.test(x.founded))) &&
       (f.senior === ANY || x.senior >= Number(f.senior)) &&
+      (f.conf === ANY || x.prov.conf >= Number(f.conf)) &&
       (!ql || `${x.name} ${x.city} ${x.country} ${x.type} ${x.focus ?? ''} ${x.about ?? ''}`.toLowerCase().includes(ql)),
     ).sort(sort.fn)
   }, [data, f])
@@ -184,6 +187,7 @@ export default function Investors() {
             <Select label="AUM" value={f.aum} options={AUM_BANDS.map((b) => b.label)} onChange={(v) => set('aum', v)} />
             <Select label="Cheque size" value={f.cheque} options={CHEQUES.map((b) => b.label)} onChange={(v) => set('cheque', v)} />
             <Select label="Founded" value={f.founded} options={FOUNDED.map((b) => b.label)} onChange={(v) => set('founded', v)} />
+            <Select label="Data confidence" value={f.conf} options={['60', '80']} format={(v) => (v === '80' ? 'High only' : 'Medium or better')} onChange={(v) => set('conf', v)} />
             <Select label="Decision-makers" value={f.senior} options={SENIOR.map(String)} format={(v) => `${v}+`} onChange={(v) => set('senior', v)} />
           </div>
         )}
@@ -191,7 +195,7 @@ export default function Investors() {
           <span className="small"><b className="num">{filtered.length.toLocaleString()}</b> <span className="muted">investors</span></span>
           {active.map((k) => (
             <button key={k} className="chip-btn on" onClick={() => set(k, EMPTY[k])}>
-              <X />{LABELS[k]}: {k === 'senior' ? `${f[k]}+` : f[k]}
+              <X />{LABELS[k]}: {k === 'senior' ? `${f[k]}+` : k === 'conf' ? `${f[k]}+` : f[k]}
             </button>
           ))}
           {active.length > 0 && <button className="btn ghost sm" onClick={() => setF({ ...EMPTY, sort: f.sort })}>Clear all</button>}
@@ -204,7 +208,7 @@ export default function Investors() {
         <Panel flush>
           <div className="table-wrap">
             <table className="table">
-              <thead><tr><th>Investor</th><th>Type</th><th>Location</th><th className="r">AUM</th><th className="r">Cheque</th><th className="r">Contacts</th></tr></thead>
+              <thead><tr><th>Investor</th><th>Type</th><th>Location</th><th className="r">AUM</th><th className="r">Cheque</th><th className="r">Contacts</th><th>Data</th></tr></thead>
               <tbody>
                 {filtered.slice(0, limit).map((x) => (
                   <tr key={x.id} className="clickable" onClick={() => setSel(x)}>
@@ -214,6 +218,7 @@ export default function Investors() {
                     <td className="r num small">{fmtAum(x.aum)}</td>
                     <td className="r num small" style={{ whiteSpace: 'nowrap' }}>{fmtCheque(x)}</td>
                     <td className="r num small">{x.contacts}<span className="faint">{x.senior ? ` · ${x.senior} sr` : ''}</span></td>
+                    <td><Prov f={x} /></td>
                   </tr>
                 ))}
               </tbody>
@@ -287,6 +292,12 @@ function FirmDrawer({ x, onClose }: { x: Firm; onClose: () => void }) {
               <p className="small t2" style={{ marginBottom: 0 }}>{x.wigo.research}</p>
             </div>
           )}
+          <div className="eyebrow mt-16">Provenance</div>
+          <dl className="kv mt-8" style={{ gridTemplateColumns: '110px 1fr' }}>
+            <dt>Source</dt><dd>{x.prov.src.map((s) => `DayOne LP database ${s}`).join(' + ')}</dd>
+            <dt>Last verified</dt><dd>{x.prov.verified ?? <span className="warn">Not verified</span>}</dd>
+            <dt>Confidence</dt><dd>{x.prov.conf}/100</dd>
+          </dl>
           {x.website && <div className="mt-16"><a className="btn sm" href={`https://${x.website}`} target="_blank" rel="noreferrer"><ExternalLink />{x.website}</a></div>}
         </div>
       </aside>

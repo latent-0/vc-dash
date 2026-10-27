@@ -210,6 +210,9 @@ for r in rows[1:]:
     res = clean(r[ix['Sentiment / Latest Research']])
     if res:
         w['research'] = res[:320]
+    lr = clean(r[ix['Last Researched']])
+    if lr and res:
+        f['verified'] = max(f.get('verified') or '', lr[:10])
     ver = clean(r[ix['Verification Status']])
     if ver and ver != 'Not Sector-Flagged':
         w['verification'] = ver
@@ -373,6 +376,11 @@ for key, f in firms.items():
     if f['wigo']:
         w = {k: (scrub(v) if isinstance(v, str) else v) for k, v in f['wigo'].items() if v}
         rec['wigo'] = w
+    # Provenance: which DayOne database(s) the record came from, when it was last verified, and data confidence.
+    src = sorted({'A' if x == 'Wigo Energy' else 'B' for x in f['sources']})
+    verified = f.get('verified')
+    conf = 30 + 10 * bool(city) + 10 * bool(country) + 10 * bool(rec.get('aum')) + 10 * bool(rec.get('focus') or rec.get('about'))         + 10 * bool(rec.get('website')) + 10 * bool(f['senior']) + 10 * bool(verified)
+    rec['prov'] = {'src': src, 'verified': verified, 'conf': min(conf, 100)}
     out.append(rec)
 
 out.sort(key=lambda r: (-(r.get('aum') or 0), -r['contacts']))
@@ -381,6 +389,12 @@ meta = {
     'firms': len(out),
     'contacts': sum(r['contacts'] for r in out) + angels_independent,
     'independentAngels': angels_independent,
+    'sources': {
+        'A': {'label': 'DayOne LP database A', 'compiled': '2026-07-16', 'note': 'De-duplicated private-capital contact list with desk research on sector-flagged firms'},
+        'B': {'label': 'DayOne LP database B', 'compiled': None, 'note': 'Family office, wealth, endowment, angel and fund directory; compile date not recorded'},
+    },
+    'verifiedLast90d': sum(1 for r in out if r['prov']['verified'] and r['prov']['verified'] >= (__import__('datetime').date.today() - __import__('datetime').timedelta(days=90)).isoformat()),
+    'verifiedEver': sum(1 for r in out if r['prov']['verified']),
     'note': 'Firm-level aggregates only. Personal contact details are intentionally excluded.',
 }
 with open('public/data/investors.json', 'w', encoding='utf-8') as fh:

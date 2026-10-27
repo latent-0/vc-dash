@@ -35,11 +35,11 @@ const THESES: { id: string; name: string; kw: RegExp }[] = [
   { id: 't1', name: 'Vertical Software & Infra', kw: /vertical|saas|software|field service|construction|payments?|fintech|insurance|logistics|erp/i },
 ]
 
-const decode = (s: string) =>
+export const decode = (s: string) =>
   s.replace(/<!\[CDATA\[(.*?)\]\]>/gs, '$1').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').trim()
-const tag = (xml: string, t: string) => { const m = xml.match(new RegExp(`<${t}[^>]*>([\\s\\S]*?)</${t}>`)); return m ? decode(m[1]) : '' }
+export const tag = (xml: string, t: string) => { const m = xml.match(new RegExp(`<${t}[^>]*>([\\s\\S]*?)</${t}>`)); return m ? decode(m[1]) : '' }
 
-function hash(s: string) { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return Math.abs(h).toString(36) }
+export function hash(s: string) { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return Math.abs(h).toString(36) }
 
 function score(title: string, family: Family) {
   const hit = THESES.find((t) => t.kw.test(title)) ?? null
@@ -64,7 +64,7 @@ async function fetchNews(): Promise<LiveSignal[]> {
   return results.flatMap((r) => (r.status === 'fulfilled' ? r.value : []))
 }
 
-async function fetchFormD(ua?: string): Promise<LiveSignal[]> {
+export async function fetchFormD(ua?: string): Promise<LiveSignal[]> {
   if (!ua) return []
   const r = await fetch('https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent&type=D&company=&dateb=&owner=include&start=0&count=40&output=atom', { headers: { 'User-Agent': ua } })
   if (!r.ok) return []

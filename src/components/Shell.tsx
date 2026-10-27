@@ -1,6 +1,6 @@
 import {
   Activity, ArrowRight, Bell, BookMarked, Brain, Building, Compass, Gauge, Globe2, Home, Landmark, Map, Menu, MessageSquareText,
-  Network, Radar, Search, Sparkles, Star, TrendingUp, Telescope, Users,
+  Network, Radar, Search, Sparkles, Star, TrendingUp, Telescope, Users, FileCheck2, ListChecks, Mail, KanbanSquare, Crosshair,
 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
@@ -18,6 +18,13 @@ const NAV: { label: string; items: { to: string; label: string; icon: typeof Hom
     { to: '/signals', label: 'Signal Engine', icon: Activity, badge: String(signals.filter((s) => s.isNew).length), hot: true },
     { to: '/radar', label: 'Deal Radar', icon: Radar },
     { to: '/query', label: 'Universal Query', icon: Sparkles },
+  ] },
+  { label: 'Fundraise · Otto v1', items: [
+    { to: '/fund', label: 'Fund Fact Base', icon: FileCheck2 },
+    { to: '/shortlist', label: 'LP Shortlist', icon: ListChecks },
+    { to: '/outreach', label: 'Outreach', icon: Mail },
+    { to: '/pipeline', label: 'LP Pipeline', icon: KanbanSquare },
+    { to: '/competitors', label: 'Competitor Watch', icon: Crosshair, badge: 'LIVE', hot: true },
   ] },
   { label: 'Deal work', items: [
     { to: '/relationships', label: 'Relationship Graph', icon: Network },
