@@ -1,6 +1,6 @@
 import {
   Activity, ArrowRight, Bell, BookMarked, Brain, Building, Compass, Gauge, Globe2, Home, Landmark, Map, Menu, MessageSquareText,
-  Network, Radar, Search, Sparkles, Star, TrendingUp, Telescope, Users, FileCheck2, ListChecks, Mail, KanbanSquare, Crosshair,
+  Network, Radar, Search, Sparkles, Star, TrendingUp, Telescope, Users, FileCheck2, ListChecks, Mail, KanbanSquare, Crosshair, Binoculars,
 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
@@ -19,12 +19,15 @@ const NAV: { label: string; items: { to: string; label: string; icon: typeof Hom
     { to: '/radar', label: 'Deal Radar', icon: Radar },
     { to: '/query', label: 'Universal Query', icon: Sparkles },
   ] },
-  { label: 'Fundraise · Otto v1', items: [
+  { label: 'For GPs · Fundraise', items: [
     { to: '/fund', label: 'Fund Fact Base', icon: FileCheck2 },
     { to: '/shortlist', label: 'LP Shortlist', icon: ListChecks },
     { to: '/outreach', label: 'Outreach', icon: Mail },
     { to: '/pipeline', label: 'LP Pipeline', icon: KanbanSquare },
     { to: '/competitors', label: 'Competitor Watch', icon: Crosshair, badge: 'LIVE', hot: true },
+  ] },
+  { label: 'For LPs', items: [
+    { to: '/lp', label: 'Manager Discovery', icon: Binoculars, badge: 'SEC', hot: true },
   ] },
   { label: 'Deal work', items: [
     { to: '/relationships', label: 'Relationship Graph', icon: Network },
@@ -99,12 +102,26 @@ export function Shell({ children }: { children: ReactNode }) {
           <button className="search-trigger" data-tour="search" onClick={() => setPaletteOpen(true)}>
             <Search /> <span className="ellipsis">Ask anything — companies, signals, people, theses…</span><span className="kbd hide-sm">Ctrl K</span>
           </button>
+          <WorkspaceSwitch />
           <LiveStatus />
           <NavLink to="/watchlists" className="icon-btn" aria-label="Alerts"><Bell /><span className="dot" /></NavLink>
         </header>
         <div className="content" ref={contentRef}>{children}</div>
       </div>
       {paletteOpen && <Palette onClose={() => setPaletteOpen(false)} />}
+    </div>
+  )
+}
+
+function WorkspaceSwitch() {
+  const loc = useLocation()
+  const nav = useNavigate()
+  const lp = loc.pathname.startsWith('/lp')
+  const gp = ['/fund', '/shortlist', '/outreach', '/pipeline', '/competitors'].some((p) => loc.pathname.startsWith(p))
+  return (
+    <div className="seg hide-sm" title="Switch workspace" data-tour="workspace">
+      <button className={cx(gp && 'on')} onClick={() => nav('/fund')}>GP</button>
+      <button className={cx(lp && 'on')} onClick={() => nav('/lp')}>LP</button>
     </div>
   )
 }

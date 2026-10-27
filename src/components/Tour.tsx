@@ -21,6 +21,7 @@ const STEPS: Step[] = [
   { route: '/fund', target: 'fund-form', title: 'Otto v1: fund fact base', body: 'For emerging GPs raising Fund I or II. Capture strategy, track record and target size once. Every draft is checked against it, and it never leaves this browser.' },
   { route: '/shortlist', title: 'A 50-LP shortlist in under a minute', body: 'Otto scores every LP on cheque size, stage, sector, geography and emerging-manager appetite, explains each score in plain language, and shows the record’s source, verification date and confidence.' },
   { route: '/competitors', target: 'competitor-lens', title: 'Realtime Competitor Watch', body: 'See which managers are raising in your strategy right now (fund closes, launches and SEC Form D filings), plus funding, M&A and pricing moves from portfolio competitors.' },
+  { route: '/lp', target: 'lp-feed', title: 'For LPs: Manager Discovery', body: 'Every pooled fund raising right now, read from SEC Form D filings: target size, capital raised, LP count and minimum commitment, screened against your mandate with plain-language reasons and Otto screening questions.' },
   { route: '/', target: 'search', title: 'Ask anything', body: 'Press Ctrl K to search or ask Otto a question in natural language across companies, signals, people and sponsors.' },
   { route: '/', target: 'voice', title: 'Talk to Otto', body: 'Tap the orb and speak. Otto can answer questions and drive the app for you, e.g. “open Northwind’s IC room” or “show me live funding rounds”.' },
 ]

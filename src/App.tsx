@@ -30,6 +30,7 @@ const pages = {
   Outreach: lazy(() => import('./pages/Outreach')),
   Pipeline: lazy(() => import('./pages/Pipeline')),
   Competitors: lazy(() => import('./pages/Competitors')),
+  Managers: lazy(() => import('./pages/Managers')),
 }
 
 function Splash() {
@@ -88,6 +89,7 @@ export default function App() {
               <Route path="/outreach/:id" element={<P.Outreach />} />
               <Route path="/pipeline" element={<P.Pipeline />} />
               <Route path="/competitors" element={<P.Competitors />} />
+              <Route path="/lp" element={<P.Managers />} />
               <Route path="*" element={<Dashboard />} />
             </Routes>
           </Suspense>
